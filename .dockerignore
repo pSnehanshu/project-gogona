@@ -1,0 +1,8 @@
+*
+!node_modules
+!backend
+backend/build
+!frontend
+frontend/build
+!package*.json
+!tsconfig.json

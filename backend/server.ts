@@ -1,8 +1,8 @@
-import * as express from "express";
+import express from "express";
 import { join } from "path";
 import helmet from "helmet";
-import * as proxy from "express-http-proxy";
-import backend from "./backend/src";
+import proxy from "express-http-proxy";
+import backend from "./src";
 
 const isProduction = process.env.NODE_ENV === "production";
 

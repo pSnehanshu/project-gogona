@@ -1,5 +1,10 @@
 {
   "compilerOptions": {
-    "outDir": "build"
-  }
+    "sourceMap": true,
+    "outDir": "backend/build",
+    "strict": true,
+    "lib": ["esnext"],
+    "esModuleInterop": true
+  },
+  "include": ["backend/"]
 }
