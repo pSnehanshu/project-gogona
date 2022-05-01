@@ -24,4 +24,4 @@ app.get(
 app.all('*', (req, res) => res.sendStatus(404));
 
 const port = process.env.PORT || 2343;
-app.listen(port, () => console.log('Crusty is running on port', port));
+app.listen(port, () => console.log('gogona is running on port', port));
