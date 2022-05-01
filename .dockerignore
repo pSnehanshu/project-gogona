@@ -6,3 +6,4 @@ backend/build
 frontend/build
 !package*.json
 !tsconfig.json
+!prisma

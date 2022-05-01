@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import { join } from "path";
 import helmet from "helmet";
@@ -19,6 +20,8 @@ app.get(
     ? express.static(join(__dirname, "frontend", "build"))
     : proxy("http://localhost:2344")
 );
+
+app.all("*", (req, res) => res.sendStatus(404));
 
 const port = process.env.PORT || 2343;
 app.listen(port, () => console.log("Crusty is running on port", port));
