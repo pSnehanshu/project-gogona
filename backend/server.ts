@@ -3,7 +3,7 @@ import express from "express";
 import { join } from "path";
 import helmet from "helmet";
 import proxy from "express-http-proxy";
-import backend from "./src";
+import routes from "./routes";
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -13,7 +13,7 @@ if (isProduction) {
   app.use(helmet());
 }
 
-app.use("/api", backend);
+app.use("/api", routes);
 app.get(
   "*",
   isProduction
