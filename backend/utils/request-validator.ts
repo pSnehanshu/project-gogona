@@ -32,7 +32,7 @@ export const ValidateBody =
       return RespondError(res, Errors.VALIDATION_FAILED, {
         statusCode: 400,
         errorSummary: "You have provided invalid input",
-        details: errors.map((e) => _.pick(e, ["property", "constraints"])),
+        data: errors.map((e) => _.pick(e, ["property", "constraints"])),
       });
     }
 

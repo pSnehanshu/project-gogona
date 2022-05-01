@@ -1,16 +1,18 @@
 import { Response } from "express";
-import { Errors, ErrorResponse } from "../../shared/errors";
+import { Errors } from "../../shared/errors";
+import { ErrorResponse, SuccessResponse } from "../../shared/responses.type";
 
-export function generateErrorResponse(
+export function generateErrorResponse<T>(
   errorType: Errors,
   statusCode: number,
-  options?: { errorSummary?: string; details?: Record<string, any> }
-): ErrorResponse {
+  options?: { errorSummary?: string; data?: T }
+): ErrorResponse<T> {
   return {
+    success: false,
     statusCode: statusCode,
     type: errorType,
     message: options?.errorSummary ?? "Something went wrong",
-    details: options?.details ?? null,
+    data: options?.data ?? null,
   };
 }
 
@@ -20,14 +22,29 @@ export function RespondError(
   options?: {
     statusCode?: number;
     errorSummary?: string;
-    details?: Record<string, any>;
+    data?: Record<string, any>;
   }
 ) {
   const code = options?.statusCode ?? 500;
   return res.status(code).json(
     generateErrorResponse(errorType, code, {
       errorSummary: options?.errorSummary,
-      details: options?.details,
+      data: options?.data,
     })
   );
+}
+
+export function generateSuccessResponse<T>(
+  data: T,
+  statusCode: number
+): SuccessResponse<T> {
+  return {
+    statusCode,
+    data,
+    success: true,
+  };
+}
+
+export function RespondSuccess<T>(res: Response, data: T, statusCode = 200) {
+  return res.status(statusCode).json(generateSuccessResponse(data, statusCode));
 }
