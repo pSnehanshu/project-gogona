@@ -1,4 +1,4 @@
-import { Errors } from "./errors";
+import { Errors } from './errors';
 
 export type SuccessResponse<T = unknown> = {
   statusCode: number;
