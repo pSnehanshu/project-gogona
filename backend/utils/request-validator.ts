@@ -1,6 +1,8 @@
 import type { Request, Response, NextFunction } from "express";
 import { validate } from "class-validator";
 import _ from "lodash";
+import { RespondError } from "./response";
+import { Errors } from "../../shared/errors";
 
 declare type Class<T = any> = new (...args: any[]) => T;
 
@@ -27,9 +29,10 @@ export const ValidateBody =
 
     // Check if there are errors
     if (errors.length > 0) {
-      return res.status(400).json({
-        type: "ValidationError",
-        errors: errors.map((e) => _.pick(e, ["property", "constraints"])),
+      return RespondError(res, Errors.VALIDATION_FAILED, {
+        statusCode: 400,
+        errorSummary: "You have provided invalid input",
+        details: errors.map((e) => _.pick(e, ["property", "constraints"])),
       });
     }
 
