@@ -1,6 +1,9 @@
 import { Response } from "express";
-import { Errors } from "../../shared/errors";
-import { ErrorResponse, SuccessResponse } from "../../shared/responses.type";
+import type { Errors } from "../../shared/errors";
+import type {
+  ErrorResponse,
+  SuccessResponse,
+} from "../../shared/responses.type";
 
 export function generateErrorResponse<T>(
   errorType: Errors,

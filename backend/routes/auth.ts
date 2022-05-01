@@ -11,14 +11,14 @@ class LoginDTO {
   @IsEmail()
   email!: string;
 
-  @MinLength(6)
+  @MinLength(4)
   password!: string;
 }
 
 auth.post("/login", ValidateBody(LoginDTO), async (req, res) => {
   try {
     const { email, password } = req.body as LoginDTO;
-    const { user } = await login(email, password);
+    const { user } = await login(req, email, password);
 
     RespondSuccess(res, user);
   } catch (error) {

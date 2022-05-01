@@ -1,7 +1,8 @@
+import type { Request } from "express";
 import bcrypt from "bcryptjs";
 import prisma from "../prisma";
 
-export async function login(email: string, password: string) {
+export async function login(req: Request, email: string, password: string) {
   const user = await prisma.user.findUnique({
     where: { email },
   });
@@ -15,6 +16,8 @@ export async function login(email: string, password: string) {
   if (!isPasswordCorrect) {
     throw new Error();
   }
+
+  req.session.user = user;
 
   return { user };
 }
