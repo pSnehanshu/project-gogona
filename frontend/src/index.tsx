@@ -1,21 +1,28 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
+import { createRoot } from 'react-dom/client';
 import { ChakraProvider } from '@chakra-ui/react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter } from 'react-router-dom';
+import { extendTheme } from '@chakra-ui/react';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import '@fontsource/ubuntu';
 
 const queryClient = new QueryClient();
 
-const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement,
-);
+const root = createRoot(document.getElementById('root') as HTMLElement);
+
+const theme = extendTheme({
+  fonts: {
+    heading: 'Ubuntu, sans-serif',
+    body: 'Ubuntu, sans-serif',
+  },
+});
 
 root.render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <ChakraProvider>
+      <ChakraProvider theme={theme}>
         <BrowserRouter>
           <App />
         </BrowserRouter>
