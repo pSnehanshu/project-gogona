@@ -1,25 +1,21 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { Box } from '@chakra-ui/react';
+import CreatorProfile from './pages/CreatorProfile';
+
+const hostname = window.location.host;
+const hostSegments = hostname.split('.');
+const handle = hostSegments.length === 3 ? hostSegments[0] : null;
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Box bg="#000">
+      <Box maxW={500} minH="100vh" mx="auto" overflowX="hidden" bg="#d3d3d3">
+        {handle ? (
+          <CreatorProfile handle={handle} fullName="Ashish Chanchlani" />
+        ) : (
+          <h1>Come back later</h1>
+        )}
+      </Box>
+    </Box>
   );
 }
 
