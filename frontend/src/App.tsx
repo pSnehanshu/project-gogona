@@ -1,5 +1,5 @@
 import { Box } from '@chakra-ui/react';
-import CreatorProfile from './pages/CreatorProfile';
+import CreatorApp from './pages/CreatorApp';
 
 const hostname = window.location.host;
 const hostSegments = hostname.split('.');
@@ -10,7 +10,7 @@ function App() {
     <Box bg="#000">
       <Box maxW={500} minH="100vh" mx="auto" overflowX="hidden" bg="#d3d3d3">
         {handle ? (
-          <CreatorProfile handle={handle} fullName="Ashish Chanchlani" />
+          <CreatorApp handle={handle} fullName="Ashish Chanchlani" />
         ) : (
           <h1>Come back later</h1>
         )}
