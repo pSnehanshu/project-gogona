@@ -2,3 +2,12 @@ node_modules
 frontend/node_modules
 backend/build
 frontend/build
+Dockerfile
+.dockerignore
+.editorconfig
+.gitignore
+.prettierrc.yml
+nodemon.json
+README.md
+.vscode
+.env
