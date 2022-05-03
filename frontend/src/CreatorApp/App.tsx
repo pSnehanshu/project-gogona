@@ -1,4 +1,11 @@
 import {
+  Routes,
+  Route,
+  Outlet,
+  useParams,
+  useNavigate,
+} from 'react-router-dom';
+import {
   Box,
   Image,
   Heading,
@@ -107,6 +114,8 @@ const posts: PostType[] = [
 ];
 
 function Post({ post }: { post: PostType }) {
+  const navigate = useNavigate();
+
   return (
     <Box bg="#fff" mt={4}>
       <Box display="flex" alignItems="center" p={2}>
@@ -134,7 +143,7 @@ function Post({ post }: { post: PostType }) {
           variant="ghost"
           leftIcon={<BiCommentDots style={{ fontSize: '20px' }} />}
           onClick={() => {
-            //
+            navigate(`/post/${post.id}`);
           }}
         >
           {post.comments}
@@ -232,9 +241,25 @@ function Feed({ handle, fullName }: Props) {
   );
 }
 
-export default function CreatorApp({ handle, fullName }: Props) {
+function PostPage() {
+  const { postId } = useParams();
+
+  const post = posts.find((p) => p.id === postId);
+
+  if (!post) {
+    return <Text>Post not found</Text>;
+  }
+
   return (
-    <Box>
+    <>
+      <Post post={post} />
+    </>
+  );
+}
+
+function CreatorHome({ handle, fullName }: Props) {
+  return (
+    <>
       <Box bg="#fff" pb={8}>
         <IntroBox fullName={fullName} />
       </Box>
@@ -242,6 +267,30 @@ export default function CreatorApp({ handle, fullName }: Props) {
       <Box>
         <Feed handle={handle} fullName={fullName} />
       </Box>
+    </>
+  );
+}
+
+function CreatorApp() {
+  return (
+    <Box bg="#000">
+      <Box maxW={500} minH="100vh" mx="auto" overflowX="hidden" bg="#d3d3d3">
+        <Outlet />
+      </Box>
     </Box>
+  );
+}
+
+export default function CreatorRouter({ handle, fullName }: Props) {
+  return (
+    <Routes>
+      <Route path="/" element={<CreatorApp />}>
+        <Route
+          index
+          element={<CreatorHome fullName={fullName} handle={handle} />}
+        />
+        <Route path="post/:postId" element={<PostPage />} />
+      </Route>
+    </Routes>
   );
 }
