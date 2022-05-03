@@ -8,11 +8,110 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(cuid()) @db.VarChar(30)
-  email         String   @unique @db.VarChar(255)
-  emailVerified Boolean  @default(false)
-  name          String   @db.VarChar(255)
-  password      String?  @db.VarChar(70)
-  createdAt     DateTime @default(now()) @db.Timestamptz()
-  updatedAt     DateTime @updatedAt @db.Timestamptz()
+  id                  String      @id @default(cuid()) @db.VarChar(30)
+  email               String?     @unique @db.VarChar(255)
+  emailVerified       Boolean     @default(false)
+  phoneNumber         String?     @unique @db.VarChar(20)
+  phoneNumberVerified Boolean     @default(false)
+  isWhatsAppNumber    Boolean     @default(false)
+  name                String      @db.VarChar(255)
+  password            String?     @db.VarChar(70)
+  createdAt           DateTime    @default(now()) @db.Timestamptz()
+  updatedAt           DateTime    @updatedAt @db.Timestamptz()
+  Creator             Creator?
+  Subscriber          Subscriber?
+  Files               File[]
+}
+
+model Creator {
+  id              String           @id @default(cuid()) @db.VarChar(30)
+  handle          String           @unique @db.VarChar(10)
+  User            User             @relation(fields: [userId], references: [id])
+  userId          String           @unique @db.VarChar(30)
+  createdAt       DateTime         @default(now()) @db.Timestamptz()
+  updatedAt       DateTime         @updatedAt @db.Timestamptz()
+  Memberships     Membership[]
+  Posts           Post[]
+  MembershipTiers MembershipTier[]
+}
+
+model Subscriber {
+  id          String       @id @default(cuid()) @db.VarChar(30)
+  User        User         @relation(fields: [userId], references: [id])
+  userId      String       @unique @db.VarChar(30)
+  otp         String?      @db.VarChar(6)
+  Memberships Membership[]
+  createdAt   DateTime     @default(now()) @db.Timestamptz()
+  updatedAt   DateTime     @updatedAt @db.Timestamptz()
+}
+
+model Membership {
+  Creator      Creator        @relation(fields: [creatorId], references: [id])
+  creatorId    String         @db.VarChar(30)
+  Subscriber   Subscriber     @relation(fields: [subscriberId], references: [id])
+  subscriberId String         @db.VarChar(30)
+  Tier         MembershipTier @relation(fields: [tierId], references: [id])
+  tierId       String         @db.VarChar(30)
+  pgSubId      String         @db.VarChar(255) // Payment Gateway Subscription ID
+  createdAt    DateTime       @default(now()) @db.Timestamptz()
+  updatedAt    DateTime       @updatedAt @db.Timestamptz()
+
+  @@id([creatorId, subscriberId, tierId])
+}
+
+model MembershipTier {
+  id          String       @id @default(cuid()) @db.VarChar(30)
+  name        String       @db.VarChar(30)
+  description String       @default("")
+  Creator     Creator      @relation(fields: [creatorId], references: [id])
+  creatorId   String       @db.VarChar(30)
+  price       Int          @default(0) // Smallest unit, paise for INR, cents for USD etc.
+  currency    Currency     @default(INR)
+  createdAt   DateTime     @default(now()) @db.Timestamptz()
+  updatedAt   DateTime     @updatedAt @db.Timestamptz()
+  Memberships Membership[]
+  Posts       Post[]
+}
+
+enum Currency {
+  INR
+  USD
+  EUR
+  AUD
+  SGD
+  AED
+}
+
+model Post {
+  id          String             @id @default(cuid()) @db.VarChar(30)
+  Creator     Creator            @relation(fields: [creatorId], references: [id])
+  creatorId   String             @db.VarChar(30)
+  text        String             @default("")
+  MinimumTier MembershipTier?    @relation(fields: [minTierId], references: [id])
+  minTierId   String?            @db.VarChar(30)
+  createdAt   DateTime           @default(now()) @db.Timestamptz()
+  updatedAt   DateTime           @updatedAt @db.Timestamptz()
+  Files       PostMediaMapping[]
+}
+
+model File {
+  id             String             @id @default(cuid()) @db.VarChar(30)
+  link           String             @db.VarChar(255)
+  mimeType       String             @db.VarChar(50)
+  Uploader       User               @relation(fields: [uploaderUserId], references: [id])
+  uploaderUserId String             @db.VarChar(30)
+  createdAt      DateTime           @default(now()) @db.Timestamptz()
+  updatedAt      DateTime           @updatedAt @db.Timestamptz()
+  Posts          PostMediaMapping[]
+}
+
+model PostMediaMapping {
+  Post      Post     @relation(fields: [postId], references: [id])
+  postId    String   @db.VarChar(30)
+  File      File     @relation(fields: [fileId], references: [id])
+  fileId    String   @db.VarChar(30)
+  createdAt DateTime @default(now()) @db.Timestamptz()
+  updatedAt DateTime @updatedAt @db.Timestamptz()
+
+  @@id([postId, fileId])
 }
