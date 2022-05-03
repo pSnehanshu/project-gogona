@@ -51,10 +51,45 @@ const posts: PostType[] = [
   },
 ];
 
+type CommentType = {
+  postId: string;
+  id: string;
+  author: {
+    fullName: string;
+  };
+  text: string;
+  replyTo: string | null;
+};
+
+const comments: CommentType[] = [
+  {
+    id: 'wergt4regt',
+    postId: 'wefered',
+    author: {
+      fullName: 'Chaman',
+    },
+    replyTo: null,
+    text: 'Nice :)',
+  },
+  {
+    id: '2343wed',
+    postId: 'wefered',
+    author: {
+      fullName: 'Gagan',
+    },
+    replyTo: null,
+    text: 'Wow',
+  },
+];
+
 export function useFeed() {
   return posts;
 }
 
 export function usePost(id?: string) {
   return posts.find((p) => p.id === id);
+}
+
+export function useComments(postId?: string) {
+  return comments.filter((c) => c.postId === postId);
 }
