@@ -16,7 +16,9 @@ app.get(
     : proxy('http://localhost:2344'),
 );
 
-app.all('*', (req, res) => res.sendStatus(404));
+app.all('*', (req, res) =>
+  res.sendFile(join(__dirname, '..', 'frontend', 'build', 'index.html')),
+);
 
 const port = process.env.PORT || 2343;
 app.listen(port, () => console.log('gogona is running on port', port));
