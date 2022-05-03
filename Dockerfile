@@ -1,8 +1,21 @@
 #########################################
-######## BUILD BACKEND ##################
+######## BUILD FRONTEND #################
 #########################################
 
 FROM node:16.15.0 as build
+WORKDIR /home/app/frontend
+
+COPY frontend/package*.json ./
+RUN npm install
+
+COPY frontend .
+
+RUN npm run build
+
+#########################################
+######## BUILD BACKEND ##################
+#########################################
+COPY . .
 WORKDIR /home/app
 
 COPY ./package*.json ./
@@ -13,15 +26,6 @@ RUN npx prisma generate
 
 COPY . .
 RUN npx tsc
-
-#########################################
-######## BUILD FRONTEND #################
-#########################################
-
-WORKDIR /home/app/frontend
-
-RUN npm install
-RUN npm run build
 
 #########################################
 ######## COMBINE AND RUN ################
