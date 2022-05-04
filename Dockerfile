@@ -2,7 +2,7 @@
 ######## BUILD FRONTEND #################
 #########################################
 
-FROM node:16.15.0 as build
+FROM node:16.15-alpine as build
 WORKDIR /home/app/frontend
 
 COPY frontend/package*.json ./
@@ -31,7 +31,7 @@ RUN npx tsc
 ######## COMBINE AND RUN ################
 #########################################
 
-FROM node:16.15.0
+FROM node:16.15-alpine
 WORKDIR /home/app
 
 COPY --from=build home/app/backend/build ./
