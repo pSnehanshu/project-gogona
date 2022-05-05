@@ -14,10 +14,48 @@ const queryClient = new QueryClient();
 
 const root = createRoot(document.getElementById('root') as HTMLElement);
 
+const activeLabelStyles = {
+  transform: 'scale(0.85) translateY(-24px)',
+};
 const theme = extendTheme({
   fonts: {
     heading: 'Ubuntu, sans-serif',
     body: 'Ubuntu, sans-serif',
+  },
+  components: {
+    Form: {
+      variants: {
+        floating: {
+          container: {
+            _focusWithin: {
+              label: {
+                ...activeLabelStyles,
+              },
+            },
+            'input:not(:placeholder-shown) + label, .chakra-select__wrapper + label':
+              {
+                ...activeLabelStyles,
+              },
+            label: {
+              top: '2px',
+              left: 0,
+              zIndex: 2,
+              position: 'absolute',
+              backgroundColor: 'white',
+              color: 'gray',
+              pointerEvents: 'none',
+              mx: 3,
+              p: 0,
+              px: 2,
+              my: 2,
+              transformOrigin: 'left top',
+              lineHeight: 1,
+              borderRadius: 2,
+            },
+          },
+        },
+      },
+    },
   },
 });
 

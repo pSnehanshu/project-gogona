@@ -12,7 +12,7 @@ const schema = yup.object().shape({
 export default function Login() {
   return (
     <Box>
-      <Heading>Login</Heading>
+      <Heading textAlign="center">Login as a creator</Heading>
       <Formik
         initialValues={{
           email: '',
@@ -26,13 +26,11 @@ export default function Login() {
         validationSchema={schema}
       >
         <Form>
-          <Input type="email" name="email" placeholder="you@example.com" />
-          <Input
-            type="password"
-            name="password"
-            placeholder="strong password"
-          />
-          <SubmitBtn>Login</SubmitBtn>
+          <Input type="email" name="email" />
+          <Input type="password" name="password" />
+          <SubmitBtn w="full" mt="4" colorScheme="twitter">
+            Login
+          </SubmitBtn>
         </Form>
       </Formik>
     </Box>
