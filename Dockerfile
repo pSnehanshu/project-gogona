@@ -21,8 +21,8 @@ WORKDIR /home/app
 COPY ./package*.json ./
 COPY prisma prisma
 
-RUN npm install
-RUN npx prisma generate
+RUN npm install; \
+  npx prisma generate
 
 COPY . .
 RUN npx tsc
@@ -39,8 +39,8 @@ COPY --from=build home/app/frontend/build frontend/build
 COPY prisma prisma
 
 COPY ./package*.json ./
-RUN npm install --only=prod
-RUN npm install prisma
+RUN npm install --only=prod;\
+  npm install prisma
 
 COPY --from=build home/app/node_modules/.prisma node_modules/.prisma
 
