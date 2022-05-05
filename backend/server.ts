@@ -12,7 +12,9 @@ app.use('/api', routes);
 app.get(
   '*',
   isProduction
-    ? express.static(join(__dirname, '..', 'frontend', 'build'))
+    ? express.static(join(__dirname, '..', 'frontend', 'build'), {
+        maxAge: '30 days',
+      })
     : proxy('http://localhost:2344'),
 );
 

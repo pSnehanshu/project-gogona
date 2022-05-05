@@ -3,7 +3,8 @@ import bodyParser from 'body-parser';
 import session from 'express-session';
 import type { User } from '@prisma/client';
 import auth from './auth';
-import { RespondSuccess } from '../utils/response';
+import { RespondError, RespondSuccess } from '../utils/response';
+import { Errors } from '../../shared/errors';
 
 declare module 'express-session' {
   interface SessionData {
@@ -19,5 +20,16 @@ app.use(bodyParser.json());
 app.get('/', (req, res) => RespondSuccess(res, 'Hello world'));
 
 app.use('/auth', auth);
+
+app.all('*', (req, res) =>
+  RespondError(res, Errors.NOT_FOUND, {
+    statusCode: 404,
+    errorSummary: 'The resource you requested does not exists',
+    data: {
+      method: req.method,
+      path: '/api' + req.url,
+    },
+  }),
+);
 
 export default app;
