@@ -1,17 +1,28 @@
-import { Box, Heading, Link } from '@chakra-ui/react';
+import { Box, Button, Heading, Link } from '@chakra-ui/react';
 import { useAtom } from 'jotai';
 import { useEffect } from 'react';
 import { Outlet, Route, Routes, useNavigate } from 'react-router-dom';
 import type { SuccessResponse } from '../../shared/responses.type';
 import Login from './pages/auth/Login';
 import Signup from './pages/auth/Signup';
-import { userAtom } from './store/auth';
+import { useLogout, userAtom } from './store/auth';
 import type { User } from './types';
 import axios from './utils/axios';
 
 function AppLayout() {
   const [user] = useAtom(userAtom);
-  return <Box>{user && <Heading>Welcome back {user.name}</Heading>}</Box>;
+  const logout = useLogout();
+
+  return (
+    <Box>
+      {user && (
+        <>
+          <Heading>Welcome back {user.name}</Heading>
+          <Button onClick={logout}>Logout</Button>
+        </>
+      )}
+    </Box>
+  );
 }
 
 function AuthLayout() {

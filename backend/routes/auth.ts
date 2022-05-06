@@ -8,7 +8,8 @@ import app from '.';
 
 const auth = express.Router();
 
-auth.get('/whoami', async (req, res) => {
+// Check login
+auth.get('/whoami', (req, res) => {
   if (!req.session.user) {
     return RespondError(res, Errors.UNAUTHORIZED, {
       statusCode: 401,
@@ -16,6 +17,20 @@ auth.get('/whoami', async (req, res) => {
   }
 
   RespondSuccess(res, safeToTransmit(req.session.user), 200);
+});
+
+// Logout
+auth.delete('/', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      RespondError(res, Errors.LOGOUT_ERROR, {
+        statusCode: 500,
+        errorSummary: 'Failed to logout',
+      });
+    } else {
+      RespondSuccess(res, null, 200);
+    }
+  });
 });
 
 class LoginDTO {
