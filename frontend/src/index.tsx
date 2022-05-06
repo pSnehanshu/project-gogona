@@ -6,7 +6,6 @@ import { BrowserRouter } from 'react-router-dom';
 import { extendTheme } from '@chakra-ui/react';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import CreatorApp from './CreatorApp/App';
 
 import '@fontsource/ubuntu';
 
@@ -59,20 +58,12 @@ const theme = extendTheme({
   },
 });
 
-const hostname = window.location.host;
-const hostSegments = hostname.split('.');
-const handle = hostSegments.length === 3 ? hostSegments[0] : null;
-
 root.render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <ChakraProvider theme={theme}>
         <BrowserRouter>
-          {handle ? (
-            <CreatorApp handle={handle} fullName="Ashish Chanchlani" />
-          ) : (
-            <App />
-          )}
+          <App />
         </BrowserRouter>
       </ChakraProvider>
     </QueryClientProvider>

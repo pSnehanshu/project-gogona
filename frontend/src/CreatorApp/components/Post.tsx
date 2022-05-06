@@ -53,7 +53,7 @@ export default function Post({ post }: { post: PostType }) {
           variant="ghost"
           leftIcon={<BiCommentDots style={{ fontSize: '20px' }} />}
           onClick={() => {
-            navigate(`/post/${post.id}`);
+            navigate(`post/${post.id}`);
           }}
         >
           {post.comments}

@@ -8,6 +8,8 @@ import Signup from './pages/auth/Signup';
 import { useLogout, userAtom } from './store/auth';
 import type { User } from './types';
 import axios from './utils/axios';
+import { CreatorHome, CreatorLayout } from './CreatorApp/App';
+import PostPage from './CreatorApp/pages/Post';
 
 function AppLayout() {
   const [user] = useAtom(userAtom);
@@ -92,6 +94,15 @@ function AppRouter() {
         <Route path="auth" element={<AuthLayout />}>
           <Route path="login" element={<Login />} />
           <Route path="signup" element={<Signup />} />
+        </Route>
+        <Route path=":creatorHandle" element={<CreatorLayout />}>
+          <Route
+            index
+            element={
+              <CreatorHome fullName={'Ashish Chanchlani'} handle={'ashish'} />
+            }
+          />
+          <Route path="post/:postId" element={<PostPage />} />
         </Route>
       </Route>
     </Routes>
