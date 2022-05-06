@@ -1,10 +1,13 @@
-import { Box, Link } from '@chakra-ui/react';
+import { Box, Heading, Link } from '@chakra-ui/react';
+import { useAtom } from 'jotai';
 import { Outlet, Route, Routes } from 'react-router-dom';
 import Login from './pages/auth/Login';
 import Signup from './pages/auth/Signup';
+import { userAtom } from './store/auth';
 
 function AppLayout() {
-  return <Box></Box>;
+  const [user] = useAtom(userAtom);
+  return <Box>{user && <Heading>Welcome back {user.name}</Heading>}</Box>;
 }
 
 function AuthLayout() {
