@@ -15,6 +15,7 @@ model User {
   phoneNumber         String?     @unique @db.VarChar(20)
   phoneNumberVerified Boolean     @default(false)
   isWhatsAppNumber    Boolean     @default(false)
+  otp                 String?     @db.VarChar(6)
   name                String      @db.VarChar(255)
   password            String?     @db.VarChar(70)
   createdAt           DateTime    @default(now()) @db.Timestamptz()
@@ -26,7 +27,7 @@ model User {
 
 model Creator {
   id              String           @id @default(cuid()) @db.VarChar(30)
-  handle          String           @unique @db.VarChar(10)
+  handle          String           @unique @db.VarChar(15)
   User            User             @relation(fields: [userId], references: [id])
   userId          String           @unique @db.VarChar(30)
   createdAt       DateTime         @default(now()) @db.Timestamptz()
@@ -40,7 +41,6 @@ model Subscriber {
   id          String       @id @default(cuid()) @db.VarChar(30)
   User        User         @relation(fields: [userId], references: [id])
   userId      String       @unique @db.VarChar(30)
-  otp         String?      @db.VarChar(6)
   Memberships Membership[]
   createdAt   DateTime     @default(now()) @db.Timestamptz()
   updatedAt   DateTime     @updatedAt @db.Timestamptz()
