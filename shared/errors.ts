@@ -3,4 +3,5 @@ export enum Errors {
   SIGNUP_FAILED = 'Signup failed',
   VALIDATION_FAILED = 'Validation failed',
   NOT_FOUND = 'Not found',
+  UNAUTHORIZED = 'Unauthorized',
 }

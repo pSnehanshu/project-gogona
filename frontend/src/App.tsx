@@ -1,9 +1,13 @@
 import { Box, Heading, Link } from '@chakra-ui/react';
 import { useAtom } from 'jotai';
-import { Outlet, Route, Routes } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Outlet, Route, Routes, useNavigate } from 'react-router-dom';
+import type { SuccessResponse } from '../../shared/responses.type';
 import Login from './pages/auth/Login';
 import Signup from './pages/auth/Signup';
 import { userAtom } from './store/auth';
+import type { User } from './types';
+import axios from './utils/axios';
 
 function AppLayout() {
   const [user] = useAtom(userAtom);
@@ -11,6 +15,15 @@ function AppLayout() {
 }
 
 function AuthLayout() {
+  const [user] = useAtom(userAtom);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      navigate('/');
+    }
+  }, [user, navigate]);
+
   return (
     <>
       <Box
@@ -52,6 +65,15 @@ function AuthLayout() {
 }
 
 function AppRouter() {
+  const [, setUser] = useAtom(userAtom);
+
+  useEffect(() => {
+    axios
+      .get<SuccessResponse<User>>('/auth/whoami')
+      .then((res) => res.data?.data)
+      .then((user) => setUser(user));
+  }, [setUser]);
+
   return (
     <Routes>
       <Route path="/" element={<Outlet />}>

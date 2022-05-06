@@ -4,8 +4,19 @@ import { ValidateBody } from '../utils/request-validator';
 import { login, signup, safeToTransmit } from '../services/user.service';
 import { RespondError, RespondSuccess } from '../utils/response';
 import { Errors } from '../../shared/errors';
+import app from '.';
 
 const auth = express.Router();
+
+auth.get('/whoami', async (req, res) => {
+  if (!req.session.user) {
+    return RespondError(res, Errors.UNAUTHORIZED, {
+      statusCode: 401,
+    });
+  }
+
+  RespondSuccess(res, safeToTransmit(req.session.user), 200);
+});
 
 class LoginDTO {
   @IsEmail()

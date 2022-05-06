@@ -9,7 +9,6 @@ import axios from '../../utils/axios';
 import type { SuccessResponse } from '../../../../shared/responses.type';
 import type { User } from '../../types';
 import { userAtom } from '../../store/auth';
-import { useEffect } from 'react';
 
 const schema = yup.object().shape({
   email: yup.string().email().required(),
@@ -19,14 +18,8 @@ const schema = yup.object().shape({
 type LoginResponseData = SuccessResponse<User>;
 
 export default function Login() {
-  const [user, setUser] = useAtom(userAtom);
+  const [, setUser] = useAtom(userAtom);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (user) {
-      navigate('/');
-    }
-  }, [user, navigate]);
 
   return (
     <Box>
