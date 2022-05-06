@@ -3,11 +3,15 @@
 #########################################
 
 FROM node:16.15-alpine as build
+WORKDIR /home/app
+
+COPY ./package*.json ./
+
+RUN npm install
+
 WORKDIR /home/app/frontend
 
 COPY frontend/package*.json ./
-RUN npm install
-
 COPY frontend .
 
 RUN npm run build
@@ -15,10 +19,8 @@ RUN npm run build
 #########################################
 ######## BUILD BACKEND ##################
 #########################################
-COPY . .
 WORKDIR /home/app
 
-COPY ./package*.json ./
 COPY prisma prisma
 
 RUN npm install; \
