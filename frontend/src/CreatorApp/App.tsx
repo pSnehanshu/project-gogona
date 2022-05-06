@@ -1,22 +1,29 @@
-import { Outlet } from 'react-router-dom';
-import { Box } from '@chakra-ui/react';
+import { Outlet, useParams } from 'react-router-dom';
+import { Box, Heading } from '@chakra-ui/react';
 import IntroBox from './components/IntroBox';
 import Feed from './components/Feed';
+import { useCreator } from '../store/creator';
 
-type Props = {
-  handle: string;
-  fullName: string;
-};
+export function CreatorHome() {
+  const { creatorHandle } = useParams();
+  const { data: creator, isLoading, isError } = useCreator(creatorHandle);
 
-export function CreatorHome({ handle, fullName }: Props) {
+  if (isLoading) {
+    return <Heading>Loading...</Heading>;
+  }
+
+  if (isError) {
+    return <Heading>Error</Heading>;
+  }
+
   return (
     <>
       <Box bg="#fff" pb={8}>
-        <IntroBox fullName={fullName} />
+        <IntroBox fullName={creator?.User.name!} />
       </Box>
 
       <Box>
-        <Feed />
+        <Feed creatorId={creator?.id!} />
       </Box>
     </>
   );

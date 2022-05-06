@@ -1,6 +1,6 @@
-import type { PostType } from '../components/Post';
+// import type { PostType } from '../components/Post';
 
-const posts: PostType[] = [
+const posts: any[] = [
   {
     text: 'Hello guys, happy to see you here, I hope you are doing good.',
     media: [

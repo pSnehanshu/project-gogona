@@ -1,7 +1,7 @@
 import * as express from 'express';
 import { IsEmail, MinLength, IsString } from 'class-validator';
 import { ValidateBody } from '../utils/request-validator';
-import { login, signup, safeToTransmit } from '../services/user.service';
+import { login, signup, safeToTransmitUser } from '../services/user.service';
 import { RespondError, RespondSuccess } from '../utils/response';
 import { Errors } from '../../shared/errors';
 import app from '.';
@@ -16,7 +16,7 @@ auth.get('/whoami', (req, res) => {
     });
   }
 
-  RespondSuccess(res, safeToTransmit(req.session.user), 200);
+  RespondSuccess(res, safeToTransmitUser(req.session.user), 200);
 });
 
 // Logout
@@ -46,7 +46,7 @@ auth.post('/login', ValidateBody(LoginDTO), async (req, res) => {
     const { email, password } = req.body as LoginDTO;
     const { user } = await login(req, email, password);
 
-    RespondSuccess(res, safeToTransmit(user));
+    RespondSuccess(res, safeToTransmitUser(user));
   } catch (error) {
     RespondError(res, Errors.LOGIN_FAILED, {
       statusCode: 401,
@@ -71,7 +71,7 @@ auth.post('/signup', ValidateBody(SignupDTO), async (req, res) => {
     const { name, email, password } = req.body as SignupDTO;
     const { user } = await signup({ name, email, password: password || null });
 
-    RespondSuccess(res, safeToTransmit(user));
+    RespondSuccess(res, safeToTransmitUser(user));
   } catch (error) {
     RespondError(res, Errors.SIGNUP_FAILED, {
       statusCode: 500,

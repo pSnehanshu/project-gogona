@@ -96,12 +96,7 @@ function AppRouter() {
           <Route path="signup" element={<Signup />} />
         </Route>
         <Route path=":creatorHandle" element={<CreatorLayout />}>
-          <Route
-            index
-            element={
-              <CreatorHome fullName={'Ashish Chanchlani'} handle={'ashish'} />
-            }
-          />
+          <Route index element={<CreatorHome />} />
           <Route path="post/:postId" element={<PostPage />} />
         </Route>
       </Route>

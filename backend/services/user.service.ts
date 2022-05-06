@@ -4,7 +4,7 @@ import type { User } from '@prisma/client';
 import * as _ from 'lodash';
 import prisma from '../prisma';
 
-export function safeToTransmit(
+export function safeToTransmitUser(
   user: User,
 ): Omit<User, 'password' | 'createdAt' | 'updatedAt'> {
   return _.omit(user, ['password', 'createdAt', 'updatedAt']);

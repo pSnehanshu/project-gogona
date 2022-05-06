@@ -5,4 +5,5 @@ export enum Errors {
   NOT_FOUND = 'Not found',
   UNAUTHORIZED = 'Unauthorized',
   LOGOUT_ERROR = 'Logout error',
+  INTERNAL = 'Internal server error',
 }
