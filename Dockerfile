@@ -6,8 +6,8 @@ FROM node:16.15-alpine as build
 WORKDIR /home/app
 
 COPY ./package*.json ./
-
 RUN npm install
+COPY shared shared
 
 WORKDIR /home/app/frontend
 
@@ -22,9 +22,7 @@ RUN npm run build
 WORKDIR /home/app
 
 COPY prisma prisma
-
-RUN npm install; \
-  npx prisma generate
+RUN npx prisma generate
 
 COPY . .
 RUN npx tsc
@@ -41,8 +39,7 @@ COPY --from=build home/app/frontend/build frontend/build
 COPY prisma prisma
 
 COPY ./package*.json ./
-RUN npm install --only=prod;\
-  npm install prisma
+RUN npm install --only=prod
 
 COPY --from=build home/app/node_modules/.prisma node_modules/.prisma
 
