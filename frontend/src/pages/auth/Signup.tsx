@@ -1,4 +1,10 @@
-import { Box, Heading } from '@chakra-ui/react';
+import {
+  Box,
+  Heading,
+  InputGroup,
+  InputLeftAddon,
+  Input as ChakraInput,
+} from '@chakra-ui/react';
 import { Form, Formik } from 'formik';
 import { useAtom } from 'jotai';
 import { useNavigate } from 'react-router-dom';
@@ -29,6 +35,8 @@ const schema = yup.object().shape({
     )
     .required(),
 });
+
+const website = `${window.location.protocol}//${window.location.host}/`;
 
 export default function Signup() {
   const [, setUser] = useAtom(userAtom);
@@ -73,16 +81,24 @@ export default function Signup() {
         }}
         validationSchema={schema}
       >
-        <Form>
-          <Input type="text" name="name" />
-          <Input type="email" name="email" />
-          <Input type="password" name="password" />
-          <Input type="password" name="repassword" />
-          <Input type="text" name="handle" />
-          <SubmitBtn w="full" mt="4" colorScheme="twitter">
-            Signup
-          </SubmitBtn>
-        </Form>
+        {({ values }) => (
+          <Form>
+            <Input type="text" name="name" />
+            <Input type="email" name="email" />
+            <Input type="password" name="password" />
+            <Input type="password" name="repassword" label="re-type password" />
+            <Input type="text" name="handle" autoComplete="off" />
+
+            <InputGroup>
+              <InputLeftAddon children={website} />
+              <ChakraInput type="text" value={values.handle} bgColor="white" />
+            </InputGroup>
+
+            <SubmitBtn w="full" mt="4" colorScheme="twitter">
+              Signup
+            </SubmitBtn>
+          </Form>
+        )}
       </Formik>
     </Box>
   );
