@@ -8,6 +8,7 @@ processes = []
 
 [env]
 NODE_ENV="production"
+REACT_APP_HCAPTCHA_SITE_KEY="082dac9d-8934-4f36-a966-ab064abc568d"
 
 [experimental]
   allowed_public_ports = []
