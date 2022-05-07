@@ -12,6 +12,7 @@ import { RespondError, RespondSuccess } from '../utils/response';
 import { Errors } from '../../shared/errors';
 import bcrypt from 'bcryptjs';
 import prisma from '../prisma';
+import { verify as verifyCaptcha } from 'hcaptcha';
 
 const auth = express.Router();
 
@@ -76,11 +77,26 @@ class SignupDTO {
   @MaxLength(15)
   @Matches(/^@?(\w)+$/)
   handle!: string;
+
+  @IsString()
+  hcaptcha_token!: string;
 }
 
 auth.post('/signup-creator', ValidateBody(SignupDTO), async (req, res) => {
   try {
-    const { name, email, password, handle } = req.body as SignupDTO;
+    const { name, email, password, handle, hcaptcha_token } =
+      req.body as SignupDTO;
+
+    const captchaData = await verifyCaptcha(
+      process.env.HCAPTCHA_SECRET!,
+      hcaptcha_token,
+    );
+    if (!captchaData.success) {
+      return RespondError(res, Errors.SIGNUP_FAILED, {
+        statusCode: 400,
+        errorSummary: 'Invalid captcha',
+      });
+    }
 
     // Check if handle is unique
     const handleUserCount = await prisma.creator.count({

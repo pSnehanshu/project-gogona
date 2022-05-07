@@ -4,6 +4,7 @@ import {
   InputGroup,
   InputLeftAddon,
   Input as ChakraInput,
+  Text,
 } from '@chakra-ui/react';
 import { Form, Formik } from 'formik';
 import { useAtom } from 'jotai';
@@ -15,6 +16,8 @@ import { userAtom } from '../../store/auth';
 import { User } from '../../types';
 import axios from '../../utils/axios';
 import * as yup from 'yup';
+import HCaptcha from '@hcaptcha/react-hcaptcha';
+import { useState } from 'react';
 
 type SignupResponseData = SuccessResponse<User>;
 
@@ -34,6 +37,7 @@ const schema = yup.object().shape({
       'Handle can contain only letters, numbers, and underscore',
     )
     .required(),
+  hcaptcha: yup.string().required('Captcha is required'),
 });
 
 const website = `${window.location.protocol}//${window.location.host}/`;
@@ -41,6 +45,7 @@ const website = `${window.location.protocol}//${window.location.host}/`;
 export default function Signup() {
   const [, setUser] = useAtom(userAtom);
   const navigate = useNavigate();
+  const [hcaptchaRef, setHcaptchaRef] = useState<HCaptcha | null>();
 
   return (
     <Box>
@@ -53,9 +58,10 @@ export default function Signup() {
           repassword: '',
           name: '',
           handle: '',
+          hcaptcha: '',
         }}
         onSubmit={async (
-          { email, password, handle, name },
+          { email, password, handle, name, hcaptcha },
           { setSubmitting },
         ) => {
           try {
@@ -67,6 +73,7 @@ export default function Signup() {
               password,
               handle,
               name,
+              hcaptcha_token: hcaptcha,
             });
 
             // Set user to state
@@ -78,10 +85,11 @@ export default function Signup() {
             console.error(error);
           }
           setSubmitting(false);
+          hcaptchaRef?.resetCaptcha();
         }}
         validationSchema={schema}
       >
-        {({ values }) => (
+        {({ values, setFieldValue, errors, touched }) => (
           <Form>
             <Input type="text" name="name" />
             <Input type="email" name="email" />
@@ -91,8 +99,27 @@ export default function Signup() {
 
             <InputGroup>
               <InputLeftAddon children={website} />
-              <ChakraInput type="text" value={values.handle} bgColor="white" />
+              <ChakraInput
+                type="text"
+                value={values.handle}
+                readOnly
+                bgColor="white"
+              />
             </InputGroup>
+
+            <Box my="4">
+              <HCaptcha
+                sitekey={process.env.REACT_APP_HCAPTCHA_SITE_KEY!}
+                onVerify={(token) => setFieldValue('hcaptcha', token)}
+                ref={(ref) => setHcaptchaRef(ref)}
+              />
+
+              {touched.hcaptcha && errors.hcaptcha ? (
+                <Text color="red.500" px="1" fontSize="sm">
+                  {errors.hcaptcha}
+                </Text>
+              ) : null}
+            </Box>
 
             <SubmitBtn w="full" mt="4" colorScheme="twitter">
               Signup
