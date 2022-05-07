@@ -1,10 +1,17 @@
 import * as express from 'express';
-import { IsEmail, MinLength, IsString } from 'class-validator';
+import {
+  IsEmail,
+  MinLength,
+  IsString,
+  MaxLength,
+  Matches,
+} from 'class-validator';
 import { ValidateBody } from '../utils/request-validator';
-import { login, signup, safeToTransmitUser } from '../services/user.service';
+import { login, safeToTransmitUser } from '../services/user.service';
 import { RespondError, RespondSuccess } from '../utils/response';
 import { Errors } from '../../shared/errors';
-import app from '.';
+import bcrypt from 'bcryptjs';
+import prisma from '../prisma';
 
 const auth = express.Router();
 
@@ -63,16 +70,57 @@ class SignupDTO {
   email!: string;
 
   @MinLength(4)
-  password?: string;
+  password!: string;
+
+  @MinLength(3)
+  @MaxLength(15)
+  @Matches(/^@?(\w)+$/)
+  handle!: string;
 }
 
-auth.post('/signup', ValidateBody(SignupDTO), async (req, res) => {
+auth.post('/signup-creator', ValidateBody(SignupDTO), async (req, res) => {
   try {
-    const { name, email, password } = req.body as SignupDTO;
-    const { user } = await signup({ name, email, password: password || null });
+    const { name, email, password, handle } = req.body as SignupDTO;
+
+    // Check if handle is unique
+    const handleUserCount = await prisma.creator.count({
+      where: {
+        handle: {
+          equals: handle,
+          mode: 'insensitive',
+        },
+      },
+    });
+    if (handleUserCount > 0) {
+      return RespondError(res, Errors.SIGNUP_FAILED, {
+        statusCode: 400,
+        errorSummary: 'Handle is already taken',
+      });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    const user = await prisma.user.create({
+      data: {
+        email,
+        name,
+        password: passwordHash,
+        Creator: {
+          create: {
+            handle,
+          },
+        },
+      },
+      include: {
+        Creator: true,
+      },
+    });
+
+    // Set session
+    req.session.user = user;
 
     RespondSuccess(res, safeToTransmitUser(user));
   } catch (error) {
+    console.error(error);
     RespondError(res, Errors.SIGNUP_FAILED, {
       statusCode: 500,
       errorSummary: 'Failed to signup, please try again',

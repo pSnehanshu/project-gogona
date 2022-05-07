@@ -46,14 +46,19 @@ export default function Signup() {
           name: '',
           handle: '',
         }}
-        onSubmit={async ({ email, password }, { setSubmitting }) => {
+        onSubmit={async (
+          { email, password, handle, name },
+          { setSubmitting },
+        ) => {
           try {
             // Try login
             const {
               data: { data: user },
-            } = await axios.post<SignupResponseData>('auth/login', {
+            } = await axios.post<SignupResponseData>('auth/signup-creator', {
               email,
               password,
+              handle,
+              name,
             });
 
             // Set user to state

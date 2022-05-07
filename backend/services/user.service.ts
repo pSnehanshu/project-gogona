@@ -29,19 +29,3 @@ export async function login(req: Request, email: string, password: string) {
 
   return { user };
 }
-
-export async function signup(user: Pick<User, 'email' | 'name' | 'password'>) {
-  const passwordHash = user.password
-    ? await bcrypt.hash(user.password, 10)
-    : null;
-
-  const newUser = await prisma.user.create({
-    data: {
-      email: user.email,
-      name: user.name,
-      password: passwordHash,
-    },
-  });
-
-  return { user: newUser };
-}

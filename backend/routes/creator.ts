@@ -10,8 +10,13 @@ creatorApp.get('/:handle', async (req, res) => {
   const { handle } = req.params;
 
   try {
-    const creator = await prisma.creator.findUnique({
-      where: { handle },
+    const creator = await prisma.creator.findFirst({
+      where: {
+        handle: {
+          equals: handle,
+          mode: 'insensitive',
+        },
+      },
       include: {
         User: true,
       },
