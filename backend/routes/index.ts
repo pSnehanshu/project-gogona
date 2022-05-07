@@ -7,6 +7,9 @@ import { RespondError, RespondSuccess } from '../utils/response';
 import { Errors } from '../../shared/errors';
 import creatorApp from './creator';
 import postApp from './post';
+import ConnectPgSimple from 'connect-pg-simple';
+
+const connectPgSimple = ConnectPgSimple(session);
 
 declare module 'express-session' {
   interface SessionData {
@@ -16,7 +19,17 @@ declare module 'express-session' {
 
 const app = express.Router();
 
-app.use(session({ secret: '1234', resave: false, saveUninitialized: false }));
+app.use(
+  session({
+    store: new connectPgSimple({
+      conString: process.env.DATABASE_URL,
+      createTableIfMissing: true,
+    }),
+    secret: '1234',
+    resave: false,
+    saveUninitialized: false,
+  }),
+);
 app.use(bodyParser.json());
 
 app.get('/', (req, res) => RespondSuccess(res, 'Hello world'));
