@@ -5,11 +5,18 @@ import {
   InputLeftAddon,
   Input as ChakraInput,
   Text,
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
 } from '@chakra-ui/react';
 import { Form, Formik } from 'formik';
 import { useAtom } from 'jotai';
 import { useNavigate } from 'react-router-dom';
-import { SuccessResponse } from '../../../../shared/responses.type';
+import {
+  ErrorResponse,
+  SuccessResponse,
+} from '../../../../shared/responses.type';
 import Input from '../../components/form/Input';
 import SubmitBtn from '../../components/form/SubmitBtn';
 import { userAtom } from '../../store/auth';
@@ -18,6 +25,7 @@ import axios from '../../utils/axios';
 import * as yup from 'yup';
 import HCaptcha from '@hcaptcha/react-hcaptcha';
 import { useState } from 'react';
+import { AxiosError } from 'axios';
 
 type SignupResponseData = SuccessResponse<User>;
 
@@ -46,10 +54,19 @@ export default function Signup() {
   const [, setUser] = useAtom(userAtom);
   const navigate = useNavigate();
   const [hcaptchaRef, setHcaptchaRef] = useState<HCaptcha | null>();
+  const [error, setError] = useState('');
 
   return (
     <Box>
-      <Heading>Signup</Heading>
+      <Heading>Signup as a creator</Heading>
+
+      {error && (
+        <Alert status="error" my="6">
+          <AlertIcon />
+          <AlertTitle>Signup failed</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
       <Formik
         initialValues={{
@@ -62,8 +79,9 @@ export default function Signup() {
         }}
         onSubmit={async (
           { email, password, handle, name, hcaptcha },
-          { setSubmitting },
+          { setSubmitting, setFieldValue },
         ) => {
+          setError('');
           try {
             // Try login
             const {
@@ -81,11 +99,15 @@ export default function Signup() {
 
             // Go to main page
             navigate('/');
-          } catch (error) {
+          } catch (e) {
+            const error = e as AxiosError<ErrorResponse<string>>;
+            setError(error.response?.data.message ?? '');
             console.error(error);
           }
+
           setSubmitting(false);
           hcaptchaRef?.resetCaptcha();
+          setFieldValue('hcaptcha', '');
         }}
         validationSchema={schema}
       >
@@ -111,6 +133,7 @@ export default function Signup() {
               <HCaptcha
                 sitekey={process.env.REACT_APP_HCAPTCHA_SITE_KEY!}
                 onVerify={(token) => setFieldValue('hcaptcha', token)}
+                onExpire={() => setFieldValue('hcaptcha', '')}
                 ref={(ref) => setHcaptchaRef(ref)}
               />
 
@@ -122,7 +145,7 @@ export default function Signup() {
             </Box>
 
             <SubmitBtn w="full" mt="4" colorScheme="twitter">
-              Signup
+              Create your account
             </SubmitBtn>
           </Form>
         )}

@@ -1,4 +1,4 @@
-import { Box, Heading } from '@chakra-ui/react';
+import { Alert, AlertIcon, AlertTitle, Box, Heading } from '@chakra-ui/react';
 import { Formik, Form } from 'formik';
 import * as yup from 'yup';
 import { useAtom } from 'jotai';
@@ -9,6 +9,7 @@ import axios from '../../utils/axios';
 import type { SuccessResponse } from '../../../../shared/responses.type';
 import type { User } from '../../types';
 import { userAtom } from '../../store/auth';
+import { useState } from 'react';
 
 const schema = yup.object().shape({
   email: yup.string().email().required(),
@@ -20,16 +21,26 @@ type LoginResponseData = SuccessResponse<User>;
 export default function Login() {
   const [, setUser] = useAtom(userAtom);
   const navigate = useNavigate();
+  const [hasFailed, setHasFailed] = useState(false);
 
   return (
     <Box>
       <Heading textAlign="center">Login as a creator</Heading>
+
+      {hasFailed && (
+        <Alert status="error" my="6">
+          <AlertIcon />
+          <AlertTitle>Login failed</AlertTitle>
+        </Alert>
+      )}
+
       <Formik
         initialValues={{
           email: '',
           password: '',
         }}
         onSubmit={async ({ email, password }, { setSubmitting }) => {
+          setHasFailed(false);
           try {
             // Try login
             const {
@@ -46,6 +57,7 @@ export default function Login() {
             navigate('/');
           } catch (error) {
             console.error(error);
+            setHasFailed(true);
           }
           setSubmitting(false);
         }}

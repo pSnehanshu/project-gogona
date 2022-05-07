@@ -98,6 +98,22 @@ auth.post('/signup-creator', ValidateBody(SignupDTO), async (req, res) => {
       });
     }
 
+    // Check if email is unique
+    const emailUserCount = await prisma.user.count({
+      where: {
+        email: {
+          equals: email,
+          mode: 'insensitive',
+        },
+      },
+    });
+    if (emailUserCount > 0) {
+      return RespondError(res, Errors.SIGNUP_FAILED, {
+        statusCode: 400,
+        errorSummary: 'Email is already used by another account',
+      });
+    }
+
     // Check if handle is unique
     const handleUserCount = await prisma.creator.count({
       where: {
