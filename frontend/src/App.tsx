@@ -1,6 +1,6 @@
 import { Box, Link } from '@chakra-ui/react';
 import { useAtom } from 'jotai';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, Route, Routes, useNavigate } from 'react-router-dom';
 import type { SuccessResponse } from '../../shared/responses.type';
 import Login from './pages/auth/Login';
@@ -84,13 +84,19 @@ function AuthLayout() {
 
 function AppRouter() {
   const [, setUser] = useAtom(userAtom);
+  const [isAuthDone, setIsAuthDone] = useState(false);
 
   useEffect(() => {
     axios
       .get<SuccessResponse<User>>('/auth/whoami')
       .then((res) => res.data?.data)
-      .then((user) => setUser(user));
+      .then((user) => setUser(user))
+      .finally(() => setIsAuthDone(true));
   }, [setUser]);
+
+  if (!isAuthDone) {
+    return <></>;
+  }
 
   return (
     <Routes>
