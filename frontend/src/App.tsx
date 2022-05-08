@@ -10,12 +10,13 @@ import type { User } from './types';
 import axios from './utils/axios';
 import { CreatorHome, CreatorLayout } from './CreatorApp/App';
 import PostPage from './CreatorApp/pages/Post';
-import Dashboard from './pages/dashboard/Dashboard';
+import DashboardLayout from './pages/dashboard/DashboardLayout';
 import DashboardPosts from './pages/dashboard/Posts';
 import MembershipTiers from './pages/dashboard/MebershipTiers';
 import Subscribers from './pages/dashboard/Subscribers';
 import Account from './pages/dashboard/Account';
 import DashboardComments from './pages/dashboard/Comments';
+import DashboardHome from './pages/dashboard/Dashboard';
 
 function Index() {
   const [user] = useAtom(userAtom);
@@ -102,7 +103,8 @@ function AppRouter() {
     <Routes>
       <Route path="/" element={<Outlet />}>
         <Route index element={<Index />} />
-        <Route path="creator" element={<Dashboard />}>
+        <Route path="creator" element={<DashboardLayout />}>
+          <Route index element={<DashboardHome />} />
           <Route path="posts" element={<DashboardPosts />} />
           <Route path="comments" element={<DashboardComments />} />
           <Route path="subscribers" element={<Subscribers />} />
