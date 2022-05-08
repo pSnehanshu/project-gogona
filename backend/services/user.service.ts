@@ -13,6 +13,10 @@ export function safeToTransmitUser(
 export async function login(req: Request, email: string, password: string) {
   const user = await prisma.user.findUnique({
     where: { email },
+    include: {
+      Creator: true,
+      Subscriber: true,
+    },
   });
 
   if (!user) {

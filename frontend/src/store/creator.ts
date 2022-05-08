@@ -1,6 +1,6 @@
 import { useQuery } from 'react-query';
 import axios from '../utils/axios';
-import type { User, Post, Creator } from '../types';
+import type { Post, Creator } from '../types';
 import { SuccessResponse } from '../../../shared/responses.type';
 
 export const useCreator = (handle?: string) =>
