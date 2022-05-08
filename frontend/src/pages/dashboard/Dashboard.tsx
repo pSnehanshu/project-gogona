@@ -1,6 +1,12 @@
 import { useAtom } from 'jotai';
 import { useEffect, ReactText } from 'react';
-import { Outlet, useNavigate, Link } from 'react-router-dom';
+import {
+  Outlet,
+  useNavigate,
+  Link,
+  useResolvedPath,
+  useMatch,
+} from 'react-router-dom';
 import { userAtom } from '../../store/auth';
 import {
   IconButton,
@@ -45,7 +51,12 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
         <CloseButton display={{ base: 'flex', md: 'none' }} onClick={onClose} />
       </Flex>
       {LinkItems.map((link) => (
-        <NavItem key={link.name} icon={link.icon} link={link.link}>
+        <NavItem
+          key={link.name}
+          icon={link.icon}
+          link={link.link}
+          onClose={onClose}
+        >
           {link.name}
         </NavItem>
       ))}
@@ -57,42 +68,46 @@ interface NavItemProps extends FlexProps {
   icon: IconType;
   children: ReactText;
   link: string | (() => void);
+  onClose?: () => void;
 }
-const NavItem = ({ icon, children, link, ...rest }: NavItemProps) => {
+const NavItem = ({ icon, children, link, onClose, ...rest }: NavItemProps) => {
+  let resolved = useResolvedPath(
+    typeof link === 'string' ? link : Math.random().toString(),
+  );
+  let match = useMatch({ path: resolved.pathname, end: true });
+
   return (
     <Link
       to={typeof link === 'string' ? link : '#'}
       onClick={() => {
+        onClose?.();
         if (typeof link === 'function') {
           link();
         }
       }}
       style={{ textDecoration: 'none' }}
-      // _focus={{ boxShadow: 'none' }}
     >
       <Flex
         align="center"
         p="4"
         mx="4"
+        mb="2"
         borderRadius="lg"
         role="group"
         cursor="pointer"
-        _hover={{
-          bg: 'cyan.400',
-          color: 'white',
-        }}
+        _hover={
+          match
+            ? {}
+            : {
+                bg: 'cyan.300',
+                // color: 'white',
+              }
+        }
+        bg={match ? 'cyan.600' : undefined}
+        color={match ? 'white' : undefined}
         {...rest}
       >
-        {icon && (
-          <Icon
-            mr="4"
-            fontSize="16"
-            _groupHover={{
-              color: 'white',
-            }}
-            as={icon}
-          />
-        )}
+        {icon && <Icon mr="4" fontSize="16" as={icon} />}
         {children}
       </Flex>
     </Link>
