@@ -9,20 +9,22 @@ datasource db {
 }
 
 model User {
-  id                  String      @id @default(cuid()) @db.VarChar(30)
-  email               String?     @unique @db.VarChar(255)
-  emailVerified       Boolean     @default(false)
-  name                String      @db.VarChar(255)
-  password            String?     @db.VarChar(70)
-  createdAt           DateTime    @default(now()) @db.Timestamptz(6)
-  updatedAt           DateTime    @updatedAt @db.Timestamptz(6)
-  isWhatsAppNumber    Boolean     @default(false)
-  phoneNumber         String?     @unique @db.VarChar(20)
-  phoneNumberVerified Boolean     @default(false)
-  otp                 String?     @db.VarChar(6)
+  id                  String             @id @default(cuid()) @db.VarChar(30)
+  email               String?            @unique @db.VarChar(255)
+  emailVerified       Boolean            @default(false)
+  name                String             @db.VarChar(255)
+  password            String?            @db.VarChar(70)
+  createdAt           DateTime           @default(now()) @db.Timestamptz(6)
+  updatedAt           DateTime           @updatedAt @db.Timestamptz(6)
+  isWhatsAppNumber    Boolean            @default(false)
+  phoneNumber         String?            @unique @db.VarChar(20)
+  phoneNumberVerified Boolean            @default(false)
+  otp                 String?            @db.VarChar(6)
   Creator             Creator?
   Files               File[]
   Subscriber          Subscriber?
+  Comments            PostComment[]
+  CommentLikes        CommentReactions[]
 }
 
 model Creator {
@@ -44,6 +46,7 @@ model Subscriber {
   updatedAt   DateTime     @updatedAt @db.Timestamptz(6)
   User        User         @relation(fields: [userId], references: [id])
   Memberships Membership[]
+  PostLikes   PostLikes[]
 }
 
 model Membership {
@@ -75,15 +78,59 @@ model MembershipTier {
 }
 
 model Post {
-  id          String             @id @default(cuid()) @db.VarChar(30)
-  creatorId   String             @db.VarChar(30)
-  text        String             @default("")
-  createdAt   DateTime           @default(now()) @db.Timestamptz(6)
-  updatedAt   DateTime           @updatedAt @db.Timestamptz(6)
-  minTierId   String?            @db.VarChar(30)
-  Creator     Creator            @relation(fields: [creatorId], references: [id])
-  MinimumTier MembershipTier?    @relation(fields: [minTierId], references: [id])
-  Files       PostMediaMapping[]
+  id            String             @id @default(cuid()) @db.VarChar(30)
+  creatorId     String             @db.VarChar(30)
+  text          String             @default("")
+  createdAt     DateTime           @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime           @updatedAt @db.Timestamptz(6)
+  likesCount    Int                @default(0) @db.Integer()
+  commentsCount Int                @default(0) @db.Integer()
+  minTierId     String?            @db.VarChar(30)
+  Creator       Creator            @relation(fields: [creatorId], references: [id])
+  MinimumTier   MembershipTier?    @relation(fields: [minTierId], references: [id])
+  Files         PostMediaMapping[]
+  Comments      PostComment[]
+  Likes         PostLikes[]
+}
+
+model PostLikes {
+  postId       String     @db.VarChar(30)
+  subscriberId String     @db.VarChar(30)
+  createdAt    DateTime   @default(now()) @db.Timestamptz(6)
+  Post         Post       @relation(fields: [postId], references: [id])
+  Subscriber   Subscriber @relation(fields: [subscriberId], references: [id])
+
+  @@id([postId, subscriberId])
+}
+
+model PostComment {
+  id            String             @id @default(cuid()) @db.VarChar(30)
+  postId        String             @db.VarChar(30)
+  userId        String             @db.VarChar(30)
+  capacity      CommenterCapacity
+  parentId      String?            @db.VarChar(30)
+  text          String
+  likesCount    Int                @default(0) @db.Integer()
+  dislikesCount Int                @default(0) @db.Integer()
+  createdAt     DateTime           @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime           @updatedAt @db.Timestamptz(6)
+  Post          Post               @relation(fields: [postId], references: [id])
+  User          User               @relation(fields: [userId], references: [id])
+  ParentComment PostComment?       @relation("Reply", fields: [parentId], references: [id])
+  Replies       PostComment[]      @relation("Reply")
+  Reactions     CommentReactions[]
+}
+
+model CommentReactions {
+  commentId String            @db.VarChar(30)
+  userId    String            @db.VarChar(30)
+  capacity  CommenterCapacity @default(subscriber)
+  type      ReactionTypes
+  createdAt DateTime          @default(now()) @db.Timestamptz(6)
+  Comment   PostComment       @relation(fields: [commentId], references: [id])
+  User      User              @relation(fields: [userId], references: [id])
+
+  @@id([commentId, userId])
 }
 
 model File {
@@ -123,4 +170,14 @@ enum Currency {
   AUD
   SGD
   AED
+}
+
+enum CommenterCapacity {
+  subscriber
+  creator
+}
+
+enum ReactionTypes {
+  like
+  dislike
 }
