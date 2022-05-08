@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import 'reflect-metadata';
 import express from 'express';
 import { join } from 'path';
 import proxy from 'express-http-proxy';

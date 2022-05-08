@@ -6,7 +6,7 @@ import {
   MaxLength,
   Matches,
 } from 'class-validator';
-import { ValidateBody } from '../utils/request-validator';
+import { ValidateRequest } from '../utils/request-validator';
 import { login, safeToTransmitUser } from '../services/user.service';
 import { RespondError, RespondSuccess } from '../utils/response';
 import { Errors } from '../../shared/errors';
@@ -49,7 +49,7 @@ class LoginDTO {
   password!: string;
 }
 
-auth.post('/login', ValidateBody(LoginDTO), async (req, res) => {
+auth.post('/login', ValidateRequest('body', LoginDTO), async (req, res) => {
   try {
     const { email, password } = req.body as LoginDTO;
     const { user } = await login(req, email, password);
@@ -82,82 +82,86 @@ class SignupDTO {
   hcaptcha_token!: string;
 }
 
-auth.post('/signup-creator', ValidateBody(SignupDTO), async (req, res) => {
-  try {
-    const { name, email, password, handle, hcaptcha_token } =
-      req.body as SignupDTO;
+auth.post(
+  '/signup-creator',
+  ValidateRequest('body', SignupDTO),
+  async (req, res) => {
+    try {
+      const { name, email, password, handle, hcaptcha_token } =
+        req.body as SignupDTO;
 
-    const captchaData = await verifyCaptcha(
-      process.env.HCAPTCHA_SECRET!,
-      hcaptcha_token,
-    );
-    if (!captchaData.success) {
-      return RespondError(res, Errors.SIGNUP_FAILED, {
-        statusCode: 400,
-        errorSummary: 'Invalid captcha',
-      });
-    }
+      const captchaData = await verifyCaptcha(
+        process.env.HCAPTCHA_SECRET!,
+        hcaptcha_token,
+      );
+      if (!captchaData.success) {
+        return RespondError(res, Errors.SIGNUP_FAILED, {
+          statusCode: 400,
+          errorSummary: 'Invalid captcha',
+        });
+      }
 
-    // Check if email is unique
-    const emailUserCount = await prisma.user.count({
-      where: {
-        email: {
-          equals: email,
-          mode: 'insensitive',
-        },
-      },
-    });
-    if (emailUserCount > 0) {
-      return RespondError(res, Errors.SIGNUP_FAILED, {
-        statusCode: 400,
-        errorSummary: 'Email is already used by another account',
-      });
-    }
-
-    // Check if handle is unique
-    const handleUserCount = await prisma.creator.count({
-      where: {
-        handle: {
-          equals: handle,
-          mode: 'insensitive',
-        },
-      },
-    });
-    if (handleUserCount > 0) {
-      return RespondError(res, Errors.SIGNUP_FAILED, {
-        statusCode: 400,
-        errorSummary: 'Handle is already taken',
-      });
-    }
-
-    const passwordHash = await bcrypt.hash(password, 10);
-    const user = await prisma.user.create({
-      data: {
-        email,
-        name,
-        password: passwordHash,
-        Creator: {
-          create: {
-            handle,
+      // Check if email is unique
+      const emailUserCount = await prisma.user.count({
+        where: {
+          email: {
+            equals: email,
+            mode: 'insensitive',
           },
         },
-      },
-      include: {
-        Creator: true,
-      },
-    });
+      });
+      if (emailUserCount > 0) {
+        return RespondError(res, Errors.SIGNUP_FAILED, {
+          statusCode: 400,
+          errorSummary: 'Email is already used by another account',
+        });
+      }
 
-    // Set session
-    req.session.user = user;
+      // Check if handle is unique
+      const handleUserCount = await prisma.creator.count({
+        where: {
+          handle: {
+            equals: handle,
+            mode: 'insensitive',
+          },
+        },
+      });
+      if (handleUserCount > 0) {
+        return RespondError(res, Errors.SIGNUP_FAILED, {
+          statusCode: 400,
+          errorSummary: 'Handle is already taken',
+        });
+      }
 
-    RespondSuccess(res, safeToTransmitUser(user));
-  } catch (error) {
-    console.error(error);
-    RespondError(res, Errors.SIGNUP_FAILED, {
-      statusCode: 500,
-      errorSummary: 'Failed to signup, please try again',
-    });
-  }
-});
+      const passwordHash = await bcrypt.hash(password, 10);
+      const user = await prisma.user.create({
+        data: {
+          email,
+          name,
+          password: passwordHash,
+          Creator: {
+            create: {
+              handle,
+            },
+          },
+        },
+        include: {
+          Creator: true,
+        },
+      });
+
+      // Set session
+      req.session.user = user;
+
+      RespondSuccess(res, safeToTransmitUser(user));
+    } catch (error) {
+      console.error(error);
+      RespondError(res, Errors.SIGNUP_FAILED, {
+        statusCode: 500,
+        errorSummary: 'Failed to signup, please try again',
+      });
+    }
+  },
+);
 
 export default auth;
