@@ -1,30 +1,35 @@
-import { Box, Button, Heading, Link } from '@chakra-ui/react';
+import { Box, Link } from '@chakra-ui/react';
 import { useAtom } from 'jotai';
 import { useEffect } from 'react';
 import { Outlet, Route, Routes, useNavigate } from 'react-router-dom';
 import type { SuccessResponse } from '../../shared/responses.type';
 import Login from './pages/auth/Login';
 import Signup from './pages/auth/Signup';
-import { useLogout, userAtom } from './store/auth';
+import { userAtom } from './store/auth';
 import type { User } from './types';
 import axios from './utils/axios';
 import { CreatorHome, CreatorLayout } from './CreatorApp/App';
 import PostPage from './CreatorApp/pages/Post';
+import Dashboard from './pages/dashboard/Dashboard';
+import DashboardPosts from './pages/dashboard/Posts';
+import MembershipTiers from './pages/dashboard/MebershipTiers';
+import Subscribers from './pages/dashboard/Subscribers';
+import Account from './pages/dashboard/Account';
+import DashboardComments from './pages/dashboard/Comments';
 
-function AppLayout() {
+function Index() {
   const [user] = useAtom(userAtom);
-  const logout = useLogout();
+  const navigate = useNavigate();
 
-  return (
-    <Box>
-      {user && (
-        <>
-          <Heading>Welcome back {user.name}</Heading>
-          <Button onClick={logout}>Logout</Button>
-        </>
-      )}
-    </Box>
-  );
+  useEffect(() => {
+    if (user) {
+      navigate('/creator');
+    } else {
+      navigate('/auth/login');
+    }
+  }, [user, navigate]);
+
+  return <></>;
 }
 
 function AuthLayout() {
@@ -90,7 +95,14 @@ function AppRouter() {
   return (
     <Routes>
       <Route path="/" element={<Outlet />}>
-        <Route index element={<AppLayout />} />
+        <Route index element={<Index />} />
+        <Route path="creator" element={<Dashboard />}>
+          <Route path="posts" element={<DashboardPosts />} />
+          <Route path="comments" element={<DashboardComments />} />
+          <Route path="subscribers" element={<Subscribers />} />
+          <Route path="membership-tiers" element={<MembershipTiers />} />
+          <Route path="account" element={<Account />} />
+        </Route>
         <Route path="auth" element={<AuthLayout />}>
           <Route path="login" element={<Login />} />
           <Route path="signup" element={<Signup />} />
