@@ -4,6 +4,7 @@ import {
   Text,
   FormLabel,
   Input as ChakraInput,
+  Textarea,
 } from '@chakra-ui/react';
 import type { BoxProps } from '@chakra-ui/react';
 import { Field, useField, useFormikContext } from 'formik';
@@ -22,7 +23,7 @@ export default function Input(
       <FormControl variant="floating">
         <Field
           {...fieldProps}
-          as={ChakraInput}
+          as={props.type === 'textarea' ? Textarea : ChakraInput}
           placeholder=" "
           disabled={isSubmitting}
           bgColor="white"

@@ -147,6 +147,7 @@ auth.post(
         },
         include: {
           Creator: true,
+          Subscriber: true,
         },
       });
 

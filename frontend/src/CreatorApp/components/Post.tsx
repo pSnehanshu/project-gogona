@@ -25,7 +25,11 @@ export default function Post({ post }: { post: PostType }) {
         </Heading>
       </Box>
       <Box>
-        <Text p={4}>{post.text}</Text>
+        <Box p={4}>
+          {post.text.split('\n').map((para) => (
+            <Text>{para.trim()}</Text>
+          ))}
+        </Box>
         <Image src={post.Files?.[0]?.File?.link} w="full" />
       </Box>
       <Box display="flex" justifyContent="space-around" py={4} px={2}>

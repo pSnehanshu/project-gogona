@@ -18,7 +18,7 @@ export const useCreator = (handle?: string) =>
 
 export const useCreatorFeed = (creatorId?: string, skip = 0, take = 20) =>
   useQuery(
-    [`/post/by-creator/${creatorId}`, skip, take],
+    ['/post/by-creator', creatorId, skip, take],
     async () => {
       if (!creatorId) {
         throw new Error('Handle not provided');

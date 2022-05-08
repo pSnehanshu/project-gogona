@@ -1,7 +1,7 @@
 import * as express from 'express';
 import bodyParser from 'body-parser';
 import session from 'express-session';
-import type { User } from '@prisma/client';
+import type { Creator, Subscriber, User } from '@prisma/client';
 import auth from './auth';
 import { RespondError, RespondSuccess } from '../utils/response';
 import { Errors } from '../../shared/errors';
@@ -13,7 +13,10 @@ const connectPgSimple = ConnectPgSimple(session);
 
 declare module 'express-session' {
   interface SessionData {
-    user?: User;
+    user?: User & {
+      Creator: Creator | null;
+      Subscriber: Subscriber | null;
+    };
   }
 }
 
