@@ -16,15 +16,19 @@ export const useCreator = (handle?: string) =>
     return data.data;
   });
 
-export const useCreatorFeed = (creatorId?: string) =>
-  useQuery(`/post/by-creator/${creatorId}`, async () => {
-    if (!creatorId) {
-      throw new Error('Handle not provided');
-    }
+export const useCreatorFeed = (creatorId?: string, skip = 0, take = 20) =>
+  useQuery(
+    [`/post/by-creator/${creatorId}`, skip, take],
+    async () => {
+      if (!creatorId) {
+        throw new Error('Handle not provided');
+      }
 
-    const { data } = await axios.get<SuccessResponse<Post[]>>(
-      `/post/by-creator/${creatorId}`,
-    );
+      const { data } = await axios.get<
+        SuccessResponse<{ posts: Post[]; total: number }>
+      >(`/post/by-creator/${creatorId}?take=${take}&skip=${skip}`);
 
-    return data.data;
-  });
+      return data.data;
+    },
+    { keepPreviousData: true },
+  );

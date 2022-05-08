@@ -3,7 +3,7 @@ import { useCreatorFeed } from '../../store/creator';
 import Post from './Post';
 
 export default function Feed({ creatorId }: { creatorId: string }) {
-  const { data: posts, isLoading, isError } = useCreatorFeed(creatorId);
+  const { data, isLoading, isError } = useCreatorFeed(creatorId);
 
   if (isLoading) {
     return <Heading>Loading...</Heading>;
@@ -12,6 +12,8 @@ export default function Feed({ creatorId }: { creatorId: string }) {
   if (isError) {
     return <Heading>Error</Heading>;
   }
+
+  const { posts } = data!;
 
   return (
     <>
