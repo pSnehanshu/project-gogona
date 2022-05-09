@@ -29,7 +29,7 @@ export default function Post({ post }: { post: PostType }) {
       </Box>
       <Box>
         <Box p={4}>
-          {post.text.split('\n').map((para: string, i) => (
+          {post.text.split('\n').map((para: string, i: number) => (
             <Text key={`${i}-${para}`}>{para.trim()}</Text>
           ))}
         </Box>
