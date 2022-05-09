@@ -20,6 +20,7 @@ model User {
   phoneNumber         String?            @unique @db.VarChar(20)
   phoneNumberVerified Boolean            @default(false)
   otp                 String?            @db.VarChar(6)
+  otpCreatedOn        DateTime?          @db.Timestamptz(6)
   Creator             Creator?
   Files               File[]
   Subscriber          Subscriber?

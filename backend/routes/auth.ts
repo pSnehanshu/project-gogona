@@ -5,12 +5,17 @@ import {
   IsString,
   MaxLength,
   Matches,
+  IsPhoneNumber,
 } from 'class-validator';
 import { ValidateRequest } from '../utils/request-validator';
-import { safeToTransmitUser } from '../services/user.service';
+import {
+  safeToTransmitUser,
+  sendOtp,
+  verifyOtp,
+} from '../services/user.service';
 import { RespondError, RespondSuccess } from '../utils/response';
 import { Errors } from '../../shared/errors';
-import bcrypt from 'bcryptjs';
+import bcrypt, { compareSync } from 'bcryptjs';
 import prisma from '../prisma';
 import { verify as verifyCaptcha } from 'hcaptcha';
 
@@ -40,6 +45,129 @@ auth.delete('/', (req, res) => {
     }
   });
 });
+
+class SubscriberSendOTP_DTO {
+  @IsPhoneNumber('IN')
+  phoneNumber!: string;
+}
+
+// Subscriber login
+auth.post(
+  '/login-subscriber/send-otp',
+  ValidateRequest('body', SubscriberSendOTP_DTO),
+  async (req, res) => {
+    try {
+      const { phoneNumber } = req.body as SubscriberSendOTP_DTO;
+      const isdPhoneNum = `+91-${phoneNumber}`;
+
+      let user = await prisma.user.findUnique({
+        where: {
+          phoneNumber: isdPhoneNum,
+        },
+        include: {
+          Subscriber: true,
+          Creator: true,
+        },
+      });
+
+      if (user && !user.Subscriber) {
+        console.error('User is not a subscriber');
+        return RespondError(res, Errors.LOGIN_FAILED, {
+          statusCode: 401,
+          errorSummary: 'User is not a subscriber',
+        });
+      }
+
+      if (!user) {
+        // New user, let's register and send otp
+        user = await prisma.user.create({
+          data: {
+            phoneNumber: isdPhoneNum,
+            phoneNumberVerified: false,
+            name: '',
+            Subscriber: {
+              create: {},
+            },
+          },
+          include: {
+            Subscriber: true,
+            Creator: true,
+          },
+        });
+      }
+
+      try {
+        await sendOtp(user.id);
+      } catch (error) {
+        console.error(error);
+        return RespondError(res, Errors.LOGIN_FAILED, {
+          statusCode: 500,
+          errorSummary: 'Failed to send OTP, please try again',
+        });
+      }
+
+      RespondSuccess(res, { userId: user.id }, 200);
+    } catch (error) {
+      console.error(error);
+      RespondError(res, Errors.LOGIN_FAILED, {
+        statusCode: 500,
+      });
+    }
+  },
+);
+
+class SubscriberVerifyOTP_DTO {
+  @IsString()
+  userId!: string;
+
+  @IsString()
+  otp!: string;
+}
+
+auth.post(
+  '/login-subscriber/verify-otp',
+  ValidateRequest('body', SubscriberVerifyOTP_DTO),
+  async (req, res) => {
+    try {
+      const { otp, userId } = req.body as SubscriberVerifyOTP_DTO;
+
+      const isValidOtp = await verifyOtp(userId, otp);
+
+      if (!isValidOtp) {
+        return RespondError(res, Errors.LOGIN_FAILED, {
+          statusCode: 401,
+          errorSummary: 'Either user does not exists or OTP is invalid',
+        });
+      }
+
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        include: {
+          Creator: true,
+          Subscriber: true,
+        },
+      });
+
+      if (user && !user.Subscriber) {
+        console.error('User is not a subscriber');
+        return RespondError(res, Errors.LOGIN_FAILED, {
+          statusCode: 401,
+          errorSummary: 'User is not a subscriber',
+        });
+      }
+
+      req.session.user = user!;
+
+      RespondSuccess(res, safeToTransmitUser(user!));
+    } catch (error) {
+      console.error(error);
+      RespondError(res, Errors.LOGIN_FAILED, {
+        statusCode: 401,
+        errorSummary: 'Login failed, please try again',
+      });
+    }
+  },
+);
 
 class CreatorLoginDTO {
   @IsEmail()
