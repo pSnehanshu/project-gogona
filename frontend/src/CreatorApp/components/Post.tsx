@@ -6,15 +6,18 @@ import {
   Image,
   Text,
 } from '@chakra-ui/react';
+import { useContext } from 'react';
 import { AiOutlineLike } from 'react-icons/ai';
 import { BiCommentDots } from 'react-icons/bi';
 import { IoShareOutline } from 'react-icons/io5';
 import { useNavigate } from 'react-router-dom';
 import { Post as PostType } from '../../types';
 import Avatar from './Avatar';
+import { SubscriberLoginContext } from './subscriber-auth/SubscriberLogin';
 
 export default function Post({ post }: { post: PostType }) {
   const navigate = useNavigate();
+  const requireLogin = useContext(SubscriberLoginContext);
 
   return (
     <Box bg="#fff" mt={4}>
@@ -26,8 +29,8 @@ export default function Post({ post }: { post: PostType }) {
       </Box>
       <Box>
         <Box p={4}>
-          {post.text.split('\n').map((para: string) => (
-            <Text>{para.trim()}</Text>
+          {post.text.split('\n').map((para: string, i) => (
+            <Text key={`${i}-${para}`}>{para.trim()}</Text>
           ))}
         </Box>
         <Image src={post.Files?.[0]?.File?.link} w="full" />
@@ -38,6 +41,15 @@ export default function Post({ post }: { post: PostType }) {
           size="md"
           variant="ghost"
           leftIcon={<AiOutlineLike style={{ fontSize: '20px' }} />}
+          onClick={() => {
+            if (requireLogin) {
+              requireLogin()
+                .then(() => {
+                  // Like
+                })
+                .catch(() => null);
+            }
+          }}
         >
           {0}
         </Button>
@@ -47,7 +59,11 @@ export default function Post({ post }: { post: PostType }) {
           variant="ghost"
           leftIcon={<BiCommentDots style={{ fontSize: '20px' }} />}
           onClick={() => {
-            navigate(`post/${post.id}`);
+            if (requireLogin) {
+              requireLogin()
+                .then(() => navigate(`post/${post.id}`))
+                .catch(() => null);
+            }
           }}
         >
           {0}

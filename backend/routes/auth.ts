@@ -156,6 +156,13 @@ auth.post(
         });
       }
 
+      // Set phone number as verified
+      await prisma.user.update({
+        where: { id: user?.id },
+        data: { phoneNumberVerified: true },
+      });
+      user!.phoneNumberVerified = true;
+
       req.session.user = user!;
 
       RespondSuccess(res, safeToTransmitUser(user!));
