@@ -73,27 +73,68 @@ class CreatePostDTO {
   text!: string;
 }
 
-postApp.use(IsCreatorLoggedIn);
-
 // Create post
-postApp.post('/', ValidateRequest('body', CreatePostDTO), async (req, res) => {
-  try {
-    const { text } = req.body as CreatePostDTO;
+postApp.post(
+  '/',
+  IsCreatorLoggedIn,
+  ValidateRequest('body', CreatePostDTO),
+  async (req, res) => {
+    try {
+      const { text } = req.body as CreatePostDTO;
 
-    const post = await prisma.post.create({
-      data: {
-        text,
-        creatorId: req.session.user?.Creator?.id!,
+      const post = await prisma.post.create({
+        data: {
+          text,
+          creatorId: req.session.user?.Creator?.id!,
+        },
+      });
+
+      RespondSuccess(res, post, 200);
+    } catch (error) {
+      console.error(error);
+      RespondError(res, Errors.INTERNAL, {
+        statusCode: 500,
+        errorSummary: 'Failed to create post',
+        data: (error as any)?.message,
+      });
+    }
+  },
+);
+
+// Get one post
+postApp.get('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const post = await prisma.post.findUnique({
+      where: { id },
+      include: {
+        Files: {
+          include: {
+            File: true,
+          },
+        },
+        MinimumTier: true,
+        Creator: {
+          include: {
+            User: true,
+          },
+        },
       },
     });
 
-    RespondSuccess(res, post, 200);
+    if (!post) {
+      return RespondError(res, Errors.NOT_FOUND, {
+        statusCode: 404,
+        errorSummary: 'Post not found',
+      });
+    }
+
+    RespondSuccess(res, safeToTransmitPost(post), 200);
   } catch (error) {
     console.error(error);
     RespondError(res, Errors.INTERNAL, {
       statusCode: 500,
-      errorSummary: 'Failed to create post',
-      data: (error as any)?.message,
     });
   }
 });
