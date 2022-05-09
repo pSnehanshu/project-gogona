@@ -7,7 +7,7 @@ import {
   Matches,
 } from 'class-validator';
 import { ValidateRequest } from '../utils/request-validator';
-import { login, safeToTransmitUser } from '../services/user.service';
+import { safeToTransmitUser } from '../services/user.service';
 import { RespondError, RespondSuccess } from '../utils/response';
 import { Errors } from '../../shared/errors';
 import bcrypt from 'bcryptjs';
@@ -41,7 +41,7 @@ auth.delete('/', (req, res) => {
   });
 });
 
-class LoginDTO {
+class CreatorLoginDTO {
   @IsEmail()
   email!: string;
 
@@ -49,21 +49,47 @@ class LoginDTO {
   password!: string;
 }
 
-auth.post('/login', ValidateRequest('body', LoginDTO), async (req, res) => {
-  try {
-    const { email, password } = req.body as LoginDTO;
-    const { user } = await login(req, email, password);
+auth.post(
+  '/login-creator',
+  ValidateRequest('body', CreatorLoginDTO),
+  async (req, res) => {
+    try {
+      const { email, password } = req.body as CreatorLoginDTO;
+      const user = await prisma.user.findUnique({
+        where: { email },
+        include: {
+          Creator: true,
+          Subscriber: true,
+        },
+      });
 
-    RespondSuccess(res, safeToTransmitUser(user));
-  } catch (error) {
-    RespondError(res, Errors.LOGIN_FAILED, {
-      statusCode: 401,
-      errorSummary: 'Login failed, please try again',
-    });
-  }
-});
+      if (!user) {
+        throw new Error('User does not exists');
+      }
 
-class SignupDTO {
+      if (!user.Creator) {
+        throw new Error('User must be a creator');
+      }
+
+      const isPasswordCorrect = await bcrypt.compare(password, user.password!);
+
+      if (!isPasswordCorrect) {
+        throw new Error('Incorrect password');
+      }
+
+      req.session.user = user;
+
+      RespondSuccess(res, safeToTransmitUser(user));
+    } catch (error) {
+      RespondError(res, Errors.LOGIN_FAILED, {
+        statusCode: 401,
+        errorSummary: 'Login failed, please try again',
+      });
+    }
+  },
+);
+
+class CreatorSignupDTO {
   @IsString()
   name!: string;
 
@@ -84,11 +110,11 @@ class SignupDTO {
 
 auth.post(
   '/signup-creator',
-  ValidateRequest('body', SignupDTO),
+  ValidateRequest('body', CreatorSignupDTO),
   async (req, res) => {
     try {
       const { name, email, password, handle, hcaptcha_token } =
-        req.body as SignupDTO;
+        req.body as CreatorSignupDTO;
 
       const captchaData = await verifyCaptcha(
         process.env.HCAPTCHA_SECRET!,
