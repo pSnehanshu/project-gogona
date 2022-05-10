@@ -6,4 +6,5 @@ export enum Errors {
   UNAUTHORIZED = 'Unauthorized',
   LOGOUT_ERROR = 'Logout error',
   INTERNAL = 'Internal server error',
+  POST_CREATION_FAILED = 'Post creation failed',
 }
