@@ -27,6 +27,11 @@ import axios from '../../utils/axios';
 import SubmitBtn from '../../components/form/SubmitBtn';
 import { useQueryClient } from 'react-query';
 
+const initialValues: {
+  text: string;
+  files?: FileList;
+} = { text: '', files: undefined };
+
 function CreatePost({
   disclosure,
   onCreate,
@@ -41,10 +46,30 @@ function CreatePost({
         <ModalHeader>Create new post</ModalHeader>
         <ModalCloseButton />
         <Formik
-          initialValues={{ text: '' }}
-          onSubmit={async ({ text }, { setSubmitting }) => {
+          initialValues={initialValues}
+          onSubmit={async ({ text, files }, { setSubmitting }) => {
             try {
-              const { data: post } = await axios.post<Post>('/post', { text });
+              // Prepare FormData
+              const data2send = new FormData();
+              data2send.append('text', text);
+
+              // If files were selected, append them
+              if (files) {
+                Array.from(files).forEach((file) => {
+                  data2send.append('files', file);
+                });
+              }
+
+              // Submit to backend
+              const { data: post } = await axios.post<Post>(
+                '/post',
+                data2send,
+                {
+                  headers: {
+                    'content-type': 'multipart/form-data',
+                  },
+                },
+              );
 
               onCreate?.(post);
             } catch (error) {
@@ -53,15 +78,26 @@ function CreatePost({
             setSubmitting(false);
           }}
         >
-          <Form>
-            <ModalBody>
-              <Input name="text" type="textarea" label="Write your post" />
-            </ModalBody>
+          {({ setFieldValue }) => (
+            <Form>
+              <ModalBody>
+                <Input name="text" type="textarea" label="Write your post" />
 
-            <ModalFooter>
-              <SubmitBtn colorScheme="blue">Create post</SubmitBtn>
-            </ModalFooter>
-          </Form>
+                <input
+                  type="file"
+                  name="files"
+                  multiple
+                  onChange={(event) => {
+                    setFieldValue('files', event.currentTarget.files);
+                  }}
+                />
+              </ModalBody>
+
+              <ModalFooter>
+                <SubmitBtn colorScheme="blue">Create post</SubmitBtn>
+              </ModalFooter>
+            </Form>
+          )}
         </Formik>
       </ModalContent>
     </Modal>

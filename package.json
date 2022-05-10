@@ -45,7 +45,7 @@
     "@types/validator": "^13.7.2",
     "formik": "^2.2.9",
     "framer-motion": "^6.3.3",
-    "imagekitio-react": "^1.1.0",
+    "imagekit-javascript": "^1.4.3",
     "jotai": "^1.6.5",
     "lodash-es": "^4.17.21",
     "nodemon": "^2.0.16",
