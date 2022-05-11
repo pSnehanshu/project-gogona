@@ -35,6 +35,15 @@ function MediaDisplayer({ files }: { files: FileType[] }) {
         (file): Media => ({
           url: imagekit.url({
             path: file.link,
+            transformation: [
+              {
+                height: '400',
+              },
+              {
+                focus: 'auto',
+                quality: '40',
+              },
+            ],
           }),
           mime: file.mimeType,
         }),
@@ -66,11 +75,12 @@ function MediaDisplayer({ files }: { files: FileType[] }) {
       templateRows="1fr 1fr"
       templateColumns="1fr 1fr"
       templateAreas={gridTemplateArea}
-      bg="gray.500"
     >
       {media.map((m, i) => (
-        <GridItem key={m.url} area={`m${i}`} p="1">
-          <Image src={m.url} w="full" />
+        <GridItem key={m.url} area={`m${i}`} border="solid 1px #fff">
+          <Button w="full" h="full" variant="unstyled">
+            <Image src={m.url} w="full" h="full" objectFit="cover" />
+          </Button>
         </GridItem>
       ))}
     </Grid>
