@@ -3,6 +3,7 @@ import {
   Button,
   Flex,
   Heading,
+  IconButton,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -26,6 +27,8 @@ import Input from '../../components/form/Input';
 import axios from '../../utils/axios';
 import SubmitBtn from '../../components/form/SubmitBtn';
 import { useQueryClient } from 'react-query';
+import Upload from '../../components/form/Upload';
+import { CgAttachment } from 'react-icons/cg';
 
 const initialValues: {
   text: string;
@@ -39,6 +42,8 @@ function CreatePost({
   disclosure: ReturnType<typeof useDisclosure>;
   onCreate?: (post: Post) => void;
 }) {
+  const [isUploaderVisible, setIsUploaderVisible] = useState(false);
+
   return (
     <Modal size="2xl" isOpen={disclosure.isOpen} onClose={disclosure.onClose}>
       <ModalOverlay />
@@ -83,14 +88,15 @@ function CreatePost({
               <ModalBody>
                 <Input name="text" type="textarea" label="Write your post" />
 
-                <input
-                  type="file"
-                  name="files"
-                  multiple
-                  onChange={(event) => {
-                    setFieldValue('files', event.currentTarget.files);
-                  }}
+                <IconButton
+                  aria-label="Attachment"
+                  icon={<CgAttachment />}
+                  mb="4"
+                  variant={isUploaderVisible ? 'solid' : 'ghost'}
+                  onClick={() => setIsUploaderVisible((v) => !v)}
                 />
+
+                {isUploaderVisible && <Upload name="files" />}
               </ModalBody>
 
               <ModalFooter>
