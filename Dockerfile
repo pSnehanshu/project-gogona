@@ -1,31 +1,19 @@
-#########################################
-######## BUILD FRONTEND #################
-#########################################
-
 FROM node:16.15-alpine as build
 WORKDIR /home/app
-
-COPY ./package*.json ./
-RUN npm install
-COPY shared shared
-
-WORKDIR /home/app/frontend
-
-COPY frontend/package*.json ./
-COPY frontend .
-
-RUN npm run build
 
 #########################################
 ######## BUILD BACKEND ##################
 #########################################
-WORKDIR /home/app
-
-COPY prisma prisma
-RUN npx prisma generate
-
+COPY ./package*.json ./
+RUN npm install
 COPY . .
-RUN npx tsc
+RUN npx prisma generate && npx tsc
+
+#########################################
+######## BUILD FRONTEND #################
+#########################################
+WORKDIR /home/app/frontend
+RUN npm run build
 
 #########################################
 ######## COMBINE AND RUN ################
