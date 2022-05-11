@@ -3,6 +3,7 @@ import {
   File,
   MembershipTier,
   Post,
+  PostLikes,
   PostMediaMapping,
   User,
 } from '@prisma/client';
@@ -17,6 +18,7 @@ export function safeToTransmitPost(
     Creator: Creator & {
       User: User;
     };
+    Likes: PostLikes[];
   },
 ) {
   return {

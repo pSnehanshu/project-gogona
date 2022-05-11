@@ -6,13 +6,109 @@ import prisma from '../prisma';
 import { safeToTransmitPost } from '../services/post.service';
 import { ValidateRequest } from '../utils/request-validator';
 import { RespondError, RespondSuccess } from '../utils/response';
-import { IsCreatorLoggedIn } from '../utils/auth.middleware';
+import {
+  IsCreatorLoggedIn,
+  IsSubscriberLoggedIn,
+} from '../utils/auth.middleware';
 import multer from 'multer';
 import cuid from 'cuid';
 import { PostMediaMapping, Prisma } from '@prisma/client';
 import { imagekit } from '../utils/imagekit';
 
 const postApp = express.Router();
+
+class LikeDTO {
+  @IsString()
+  postId!: string;
+}
+// Like a post
+postApp.post(
+  '/like',
+  IsSubscriberLoggedIn,
+  ValidateRequest('body', LikeDTO),
+  async (req, res) => {
+    try {
+      const { postId } = req.body as LikeDTO;
+      const subscriberId = req.session.user?.Subscriber?.id!;
+
+      // Check if already liked
+      const liked = await prisma.postLikes.findUnique({
+        where: {
+          postId_subscriberId: {
+            postId,
+            subscriberId,
+          },
+        },
+      });
+
+      if (liked) {
+        return RespondSuccess(res, null, 200);
+      }
+
+      // Create new like
+      await prisma.postLikes.create({
+        data: {
+          postId,
+          subscriberId,
+        },
+      });
+
+      RespondSuccess(res, null, 200);
+    } catch (error) {
+      console.error(error);
+      RespondError(res, Errors.LIKE_FAILED, {
+        statusCode: 400,
+      });
+    }
+  },
+);
+
+class UnLikeDTO {
+  @IsString()
+  postId!: string;
+}
+// UnLike a post
+postApp.delete(
+  '/like',
+  IsSubscriberLoggedIn,
+  ValidateRequest('body', UnLikeDTO),
+  async (req, res) => {
+    try {
+      const { postId } = req.body as LikeDTO;
+      const subscriberId = req.session.user?.Subscriber?.id!;
+
+      // Check if already liked
+      const liked = await prisma.postLikes.findFirst({
+        where: {
+          postId,
+          subscriberId,
+        },
+      });
+
+      if (!liked) {
+        return RespondSuccess(res, null, 200);
+      }
+
+      // Create new like
+      await prisma.postLikes.delete({
+        where: {
+          postId_subscriberId: {
+            postId,
+            subscriberId,
+          },
+        },
+      });
+
+      RespondSuccess(res, null, 200);
+    } catch (error) {
+      console.error(error);
+      RespondError(res, Errors.LIKE_FAILED, {
+        statusCode: 400,
+        errorSummary: 'Failed to remove like',
+      });
+    }
+  },
+);
 
 class PaginationDTO {
   @IsOptional()
@@ -39,6 +135,16 @@ postApp.get(
     const { creatorId } = req.params;
     const { take = 20, skip = 0 } = req.query as PaginationDTO;
 
+    // Check if we should include current user's likes
+    const subscriberId = req.session.user?.Subscriber?.id;
+    let includeLikes: Prisma.PostLikesFindManyArgs | boolean = false;
+    if (subscriberId) {
+      includeLikes = {
+        where: { subscriberId },
+        take: 1,
+      };
+    }
+
     const [posts, total] = await Promise.all([
       prisma.post.findMany({
         where: { creatorId },
@@ -54,6 +160,7 @@ postApp.get(
               User: true,
             },
           },
+          Likes: includeLikes,
         },
         orderBy: {
           createdAt: 'desc',
@@ -172,6 +279,16 @@ postApp.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
+    // Check if we should include current user's likes
+    const subscriberId = req.session.user?.Subscriber?.id;
+    let includeLikes: Prisma.PostLikesFindManyArgs | boolean = false;
+    if (subscriberId) {
+      includeLikes = {
+        where: { subscriberId },
+        take: 1,
+      };
+    }
+
     const post = await prisma.post.findUnique({
       where: { id },
       include: {
@@ -186,6 +303,7 @@ postApp.get('/:id', async (req, res) => {
             User: true,
           },
         },
+        Likes: includeLikes,
       },
     });
 

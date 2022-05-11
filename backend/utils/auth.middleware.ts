@@ -27,3 +27,18 @@ export function IsCreatorLoggedIn(
     });
   }
 }
+
+export function IsSubscriberLoggedIn(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  if (req.session?.user && req.session?.user?.Subscriber) {
+    next();
+  } else {
+    RespondError(res, Errors.UNAUTHORIZED, {
+      statusCode: 401,
+      errorSummary: 'You must be logged in as a subscriber',
+    });
+  }
+}

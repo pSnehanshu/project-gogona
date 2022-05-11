@@ -7,4 +7,5 @@ export enum Errors {
   LOGOUT_ERROR = 'Logout error',
   INTERNAL = 'Internal server error',
   POST_CREATION_FAILED = 'Post creation failed',
+  LIKE_FAILED = 'Like failed',
 }

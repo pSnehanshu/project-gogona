@@ -8,8 +8,8 @@ import {
   Image,
   Text,
 } from '@chakra-ui/react';
-import { useCallback, useContext, useState } from 'react';
-import { AiOutlineLike } from 'react-icons/ai';
+import { useCallback, useContext, useEffect, useState } from 'react';
+import { AiOutlineLike, AiFillLike } from 'react-icons/ai';
 import { BiCommentDots } from 'react-icons/bi';
 import { IoShareOutline } from 'react-icons/io5';
 import { useNavigate } from 'react-router-dom';
@@ -19,6 +19,8 @@ import Avatar from './Avatar';
 import { SubscriberLoginContext } from './subscriber-auth/SubscriberLogin';
 import ImageKit from 'imagekit-javascript';
 import ImageViewer from 'react-simple-image-viewer';
+import axios from '../../utils/axios';
+import { useSubscriberUser } from '../../store/auth';
 
 const imagekit = new ImageKit({
   urlEndpoint: process.env.REACT_APP_IMAGEKIT_URL_ENDPOINT!,
@@ -102,7 +104,19 @@ function MediaDisplayer({
 export default function Post({ post }: { post: PostType }) {
   const navigate = useNavigate();
   const requireLogin = useContext(SubscriberLoginContext);
+  const user = useSubscriberUser();
 
+  // Like status
+  const [likesCount, setLikesCount] = useState(post.likesCount);
+  const [isLiked, setIsLiked] = useState(false);
+  useEffect(() => {
+    const liked = post.Likes?.find?.(
+      (like) => like.subscriberId === user?.Subscriber?.id,
+    );
+    setIsLiked(!!liked);
+  }, [post.Likes, post.id, user?.Subscriber?.id]);
+
+  // Photo viewer states
   const [currentImage, setCurrentImage] = useState(0);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const images =
@@ -116,6 +130,26 @@ export default function Post({ post }: { post: PostType }) {
         ],
       }),
     ) ?? [];
+
+  // Likes the given post
+  const doLike = async () => {
+    const oldLikesCount = likesCount;
+    try {
+      if (!isLiked) {
+        setIsLiked(true);
+        setLikesCount((c) => c + 1);
+        await axios.post('/post/like', { postId: post.id });
+      } else {
+        setIsLiked(false);
+        setLikesCount((c) => c - 1);
+        await axios.delete('/post/like', { data: { postId: post.id } });
+      }
+    } catch (error) {
+      console.error(error);
+      setIsLiked((l) => !l);
+      setLikesCount(oldLikesCount);
+    }
+  };
 
   return (
     <Box bg="#fff" mt={4}>
@@ -141,24 +175,32 @@ export default function Post({ post }: { post: PostType }) {
           />
         ) : null}
       </Box>
+
+      {/* Like button */}
       <Box display="flex" justifyContent="space-around" py={4} px={2}>
         <Button
           color="gray.600"
           size="md"
           variant="ghost"
-          leftIcon={<AiOutlineLike style={{ fontSize: '20px' }} />}
+          leftIcon={
+            isLiked ? (
+              <AiFillLike style={{ fontSize: '20px', color: '#3b5998' }} />
+            ) : (
+              <AiOutlineLike style={{ fontSize: '20px' }} />
+            )
+          }
           onClick={() => {
             if (requireLogin) {
               requireLogin()
-                .then(() => {
-                  // Like
-                })
+                .then(() => doLike())
                 .catch(() => null);
             }
           }}
         >
-          {0}
+          {likesCount}
         </Button>
+
+        {/* Comment button */}
         <Button
           color="gray.600"
           size="md"
@@ -172,8 +214,10 @@ export default function Post({ post }: { post: PostType }) {
             }
           }}
         >
-          {0}
+          {post.commentsCount}
         </Button>
+
+        {/* Share button */}
         <IconButton
           color="gray.600"
           aria-label="Share"
