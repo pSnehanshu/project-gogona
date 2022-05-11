@@ -8,7 +8,7 @@ import {
   Image,
   Text,
 } from '@chakra-ui/react';
-import { useCallback, useContext } from 'react';
+import { useCallback, useContext, useState } from 'react';
 import { AiOutlineLike } from 'react-icons/ai';
 import { BiCommentDots } from 'react-icons/bi';
 import { IoShareOutline } from 'react-icons/io5';
@@ -18,6 +18,7 @@ import type { File as FileType } from '@prisma/client';
 import Avatar from './Avatar';
 import { SubscriberLoginContext } from './subscriber-auth/SubscriberLogin';
 import ImageKit from 'imagekit-javascript';
+import ImageViewer from 'react-simple-image-viewer';
 
 const imagekit = new ImageKit({
   urlEndpoint: process.env.REACT_APP_IMAGEKIT_URL_ENDPOINT!,
@@ -28,7 +29,13 @@ type Media = {
   mime: string;
 };
 
-function MediaDisplayer({ files }: { files: FileType[] }) {
+function MediaDisplayer({
+  files,
+  onFileClick,
+}: {
+  files: FileType[];
+  onFileClick?: (index: number) => void;
+}) {
   const getMedia = useCallback(
     () =>
       files?.map(
@@ -78,7 +85,12 @@ function MediaDisplayer({ files }: { files: FileType[] }) {
     >
       {media.map((m, i) => (
         <GridItem key={m.url} area={`m${i}`} border="solid 1px #fff">
-          <Button w="full" h="full" variant="unstyled">
+          <Button
+            w="full"
+            h="full"
+            variant="unstyled"
+            onClick={() => onFileClick?.(i)}
+          >
             <Image src={m.url} w="full" h="full" objectFit="cover" />
           </Button>
         </GridItem>
@@ -90,6 +102,20 @@ function MediaDisplayer({ files }: { files: FileType[] }) {
 export default function Post({ post }: { post: PostType }) {
   const navigate = useNavigate();
   const requireLogin = useContext(SubscriberLoginContext);
+
+  const [currentImage, setCurrentImage] = useState(0);
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
+  const images =
+    post.Files?.map?.((f) =>
+      imagekit.url({
+        path: f.File.link,
+        transformation: [
+          {
+            quality: '80',
+          },
+        ],
+      }),
+    ) ?? [];
 
   return (
     <Box bg="#fff" mt={4}>
@@ -106,7 +132,13 @@ export default function Post({ post }: { post: PostType }) {
           ))}
         </Box>
         {Array.isArray(post.Files) ? (
-          <MediaDisplayer files={post.Files.map((f) => f.File)} />
+          <MediaDisplayer
+            files={post.Files.map((f) => f.File)}
+            onFileClick={(index) => {
+              setCurrentImage(index);
+              setIsViewerOpen(true);
+            }}
+          />
         ) : null}
       </Box>
       <Box display="flex" justifyContent="space-around" py={4} px={2}>
@@ -150,6 +182,19 @@ export default function Post({ post }: { post: PostType }) {
           icon={<IoShareOutline style={{ fontSize: '20px' }} />}
         />
       </Box>
+
+      {isViewerOpen && (
+        <ImageViewer
+          src={images}
+          currentIndex={currentImage}
+          disableScroll={false}
+          closeOnClickOutside={true}
+          onClose={() => {
+            setIsViewerOpen(false);
+            setCurrentImage(0);
+          }}
+        />
+      )}
     </Box>
   );
 }
