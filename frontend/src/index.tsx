@@ -59,7 +59,7 @@ const theme = extendTheme({
 });
 
 // Redirect to www subdomain
-if (!window.location.host.startsWith('www.')) {
+if (!window.location.host.startsWith('www.') && parseInt(process.env.REACT_APP_WWW_REDIRECT ?? '0', 10)) {
   const wwwUrl = `${window.location.protocol}//www.${window.location.host}${window.location.pathname}${window.location.search}${window.location.hash}`;
   window.location.href = wwwUrl;
 } else {
