@@ -4,9 +4,9 @@
   "private": true,
   "dependencies": {},
   "scripts": {
-    "start": "BROWSER=none react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
+    "start": "BROWSER=none node -r dotenv/config ../node_modules/.bin/react-scripts start dotenv_config_path=../.env",
+    "build": "node -r dotenv/config ../node_modules/.bin/react-scripts build dotenv_config_path=../.env",
+    "test": "node -r dotenv/config ../node_modules/.bin/react-scripts test dotenv_config_path=../.env",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
